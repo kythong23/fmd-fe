@@ -9,23 +9,41 @@ interface ToastItem {
   id: number;
   tone: ToastTone;
   message: string;
+  title?: string;
 }
 
+type ToastFn = (message: string, title?: string) => void;
+
 interface ToastApi {
-  success: (message: string) => void;
-  error: (message: string) => void;
-  info: (message: string) => void;
+  success: ToastFn;
+  error: ToastFn;
+  info: ToastFn;
 }
 
 const ToastContext = createContext<ToastApi | null>(null);
 
 const TONE = {
-  success: { icon: CheckCircle2, className: 'border-success/40 bg-success-subtle text-success' },
-  error: { icon: AlertOctagon, className: 'border-error/40 bg-error-subtle text-error' },
-  info: { icon: Info, className: 'border-info/40 bg-info-subtle text-info' },
+  success: {
+    icon: CheckCircle2,
+    title: 'Thành công',
+    accent: 'bg-success',
+    badge: 'bg-success-subtle text-success',
+  },
+  error: {
+    icon: AlertOctagon,
+    title: 'Có lỗi',
+    accent: 'bg-error',
+    badge: 'bg-error-subtle text-error',
+  },
+  info: {
+    icon: Info,
+    title: 'Thông tin',
+    accent: 'bg-info',
+    badge: 'bg-info-subtle text-info',
+  },
 } as const;
 
-const AUTO_DISMISS_MS = 3000;
+const AUTO_DISMISS_MS = 4000;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
@@ -34,15 +52,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     setItems((current) => current.filter((item) => item.id !== id));
   }, []);
 
-  const push = useCallback((tone: ToastTone, message: string) => {
-    setItems((current) => [...current, { id: Date.now() + Math.random(), tone, message }]);
+  const push = useCallback((tone: ToastTone, message: string, title?: string) => {
+    setItems((current) => [...current, { id: Date.now() + Math.random(), tone, message, title }]);
   }, []);
 
   const api = useMemo<ToastApi>(
     () => ({
-      success: (message) => push('success', message),
-      error: (message) => push('error', message),
-      info: (message) => push('info', message),
+      success: (message, title) => push('success', message, title),
+      error: (message, title) => push('error', message, title),
+      info: (message, title) => push('info', message, title),
     }),
     [push],
   );
@@ -50,11 +68,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext value={api}>
       {children}
+      {/* Góc trên bên phải; trên mobile bám mép trên cho khỏi che thanh tác vụ dưới */}
       <div
         aria-live="polite"
         aria-atomic="false"
         style={{ zIndex: 'var(--z-toast)' }}
-        className="pointer-events-none fixed inset-x-4 bottom-4 flex flex-col items-center gap-2 sm:inset-x-auto sm:right-4 sm:items-end"
+        className="pointer-events-none fixed inset-x-4 top-4 flex flex-col items-center gap-2 sm:inset-x-auto sm:right-4 sm:items-end"
       >
         {items.map((item) => (
           <ToastRow key={item.id} item={item} onDismiss={dismiss} />
@@ -65,7 +84,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 function ToastRow({ item, onDismiss }: { item: ToastItem; onDismiss: (id: number) => void }) {
-  const { icon: Icon, className } = TONE[item.tone];
+  const { icon: Icon, accent, badge, title } = TONE[item.tone];
 
   useEffect(() => {
     const timer = window.setTimeout(() => onDismiss(item.id), AUTO_DISMISS_MS);
@@ -75,21 +94,32 @@ function ToastRow({ item, onDismiss }: { item: ToastItem; onDismiss: (id: number
   return (
     <div
       role="status"
-      className={cn(
-        'pointer-events-auto flex w-full max-w-sm animate-slide-up items-start gap-2 rounded-md border p-3 shadow-md',
-        className,
-      )}
+      className="pointer-events-auto w-full max-w-sm animate-slide-in-right overflow-hidden rounded-lg border border-border bg-surface shadow-lg"
     >
-      <Icon aria-hidden className="mt-0.5 size-5 shrink-0" />
-      <p className="flex-1 text-body-sm font-medium">{item.message}</p>
-      <button
-        type="button"
-        aria-label="Đóng thông báo"
-        onClick={() => onDismiss(item.id)}
-        className="shrink-0 rounded-sm p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-      >
-        <X aria-hidden className="size-4" />
-      </button>
+      <div className="flex items-start gap-3 p-3">
+        <span aria-hidden className={cn('w-1 self-stretch rounded-full', accent)} />
+        <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full', badge)}>
+          <Icon aria-hidden className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-body-sm font-semibold text-text-primary">{item.title ?? title}</p>
+          <p className="mt-0.5 text-body-sm text-text-secondary">{item.message}</p>
+        </div>
+        <button
+          type="button"
+          aria-label="Đóng thông báo"
+          onClick={() => onDismiss(item.id)}
+          className="shrink-0 rounded-sm p-1 text-text-muted hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+        >
+          <X aria-hidden className="size-4" />
+        </button>
+      </div>
+      {/* Vạch đếm ngược đúng bằng thời gian tự tắt */}
+      <span
+        aria-hidden
+        className={cn('block h-1 animate-toast-timer', accent)}
+        style={{ animationDuration: AUTO_DISMISS_MS + 'ms' }}
+      />
     </div>
   );
 }

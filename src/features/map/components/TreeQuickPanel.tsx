@@ -1,8 +1,10 @@
 import { ExternalLink, MousePointerClick, X } from 'lucide-react';
+import durianTreeImg from '@/assets/durian-tree.png';
 import { Button, Card } from '@/components/ui';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { HealthScore } from '@/components/shared/HealthScore';
 import { DateText } from '@/components/shared/DateText';
+import { STATUS_CONFIG } from '@/constants/status-config';
 import { formatNumber, formatText } from '@/utils/format';
 import type { Tree } from '@/types';
 
@@ -30,9 +32,21 @@ export function TreeQuickPanel({ tree, onOpen, onClose }: TreeQuickPanelProps) {
   return (
     <Card padding="sm">
       <Card.Header>
-        <div>
-          <p className="font-mono text-h3 font-extrabold text-text-primary">{tree.code}</p>
-          <p className="text-caption text-text-secondary">{tree.variety}</p>
+        <div className="flex items-center gap-3">
+          <div
+            className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 bg-surface-sunken shadow-sm"
+            style={{ borderColor: STATUS_CONFIG[tree.status].colorVar }}
+          >
+            <img
+              src={durianTreeImg}
+              alt={tree.code}
+              className="size-full scale-110 object-cover"
+            />
+          </div>
+          <div>
+            <p className="font-mono text-h3 font-extrabold text-text-primary">{tree.code}</p>
+            <p className="text-caption text-text-secondary">{tree.variety}</p>
+          </div>
         </div>
         <Button variant="ghost" size="sm" iconOnly aria-label="Bỏ chọn cây" onClick={onClose}>
           <X aria-hidden className="size-4" />

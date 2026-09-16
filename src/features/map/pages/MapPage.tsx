@@ -12,6 +12,7 @@ import { MapLegend } from '../components/MapLegend';
 
 const LAYER_LABELS: Array<{ key: MapLayerKey; label: string }> = [
   { key: 'boundary', label: 'Ranh giới thửa' },
+  { key: 'roads', label: 'Đường giao thông' },
   { key: 'trees', label: 'Cây' },
 ];
 
@@ -19,7 +20,7 @@ const DEFAULT_LAYERS: Record<MapLayerKey, boolean> = {
   boundary: true,
   beds: false,
   canals: false,
-  roads: false,
+  roads: true,
   reservoir: false,
   facilities: false,
   trees: true,
@@ -58,31 +59,36 @@ export default function MapPage() {
     setPan({ x: 0, y: 0 });
   }, []);
 
-  // Tính toán viewBox theo zoom và pan
+  // Kéo pan bản đồ: cho phép pan tự do, không bị chặn quá ngặt khi zoom = 1
+  const clamp = useCallback((value: number, limit: number) => {
+    return Math.min(limit, Math.max(-limit, value));
+  }, []);
+
+  // Tính toán viewBox theo zoom và pan: cho phép pan rộng rãi (tối thiểu 600px ngay cả khi zoom 1)
   const viewBox = useMemo(() => {
     const box = farmQuery.data?.mapLayers.viewBox;
     if (!box) return undefined;
     const w = box.width / zoom;
     const h = box.height / zoom;
-    // ponytail: giới hạn pan để bản đồ không bị kéo ra ngoài khung
-    const clamp = (value: number, limit: number) => Math.min(limit, Math.max(-limit, value));
-    const minX = (box.width - w) / 2 - clamp(pan.x, (box.width - w) / 2);
-    const minY = (box.height - h) / 2 - clamp(pan.y, (box.height - h) / 2);
+    // Cho phép pan tự do xung quanh bản đồ
+    const maxPanX = Math.max(600, box.width * 0.8 + (box.width - w) / 2);
+    const maxPanY = Math.max(450, box.height * 0.8 + (box.height - h) / 2);
+    const minX = (box.width - w) / 2 - clamp(pan.x, maxPanX);
+    const minY = (box.height - h) / 2 - clamp(pan.y, maxPanY);
     return `${minX} ${minY} ${w} ${h}`;
-  }, [farmQuery.data, zoom, pan]);
+  }, [farmQuery.data, zoom, pan, clamp]);
 
   // Zoom CHỈ khi giữ phím Shift + lăn chuột.
-  // ponytail: React gắn onWheel dạng passive nên preventDefault không chặn được cuộn trang
-  // -> phải đăng ký listener gốc với { passive: false }.
-  const stageRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const node = stageRef.current;
+  // ponytail: callback ref thay useEffect vì khung bản đồ chỉ mount sau khi query xong,
+  // lúc effect chạy lần đầu ref vẫn null nên listener không bao giờ được gắn.
+  const wheelCleanup = useRef<(() => void) | null>(null);
+  const stageRef = useCallback((node: HTMLDivElement | null) => {
+    wheelCleanup.current?.();
+    wheelCleanup.current = null;
     if (!node) return;
     const onWheel = (e: WheelEvent) => {
       if (!e.shiftKey) return;
       e.preventDefault();
-      // ponytail: Shift+wheel bị trình duyệt map sang deltaX trên Windows
       const delta = e.deltaY || e.deltaX;
       setZoom((z) =>
         delta < 0
@@ -91,42 +97,64 @@ export default function MapPage() {
       );
     };
     node.addEventListener('wheel', onWheel, { passive: false });
-    return () => node.removeEventListener('wheel', onWheel);
+    wheelCleanup.current = () => node.removeEventListener('wheel', onWheel);
   }, []);
 
-  // Kéo pan bản đồ bằng chuột
+  // Lắng nghe di chuyển chuột trên toàn window khi đang kéo (drag mượt mà không bị khựng khi chuột ra ngoài div)
+  const [isPointerDown, setIsPointerDown] = useState(false);
+
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Chỉ kích hoạt khi click chuột trái
     if (e.button !== 0) return;
     isDragging.current = true;
+    setIsPointerDown(true);
     startDrag.current = { x: e.clientX, y: e.clientY };
     startPan.current = { ...pan };
   }, [pan]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-    const dx = (e.clientX - startDrag.current.x) / zoom;
-    const dy = (e.clientY - startDrag.current.y) / zoom;
-    setPan({
-      x: startPan.current.x + dx,
-      y: startPan.current.y + dy,
-    });
-  }, [zoom]);
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
 
-  const handleMouseUp = useCallback(() => {
-    isDragging.current = false;
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
+      const currentZoom = zoomRef.current;
+      const dx = (e.clientX - startDrag.current.x) / currentZoom;
+      const dy = (e.clientY - startDrag.current.y) / currentZoom;
+      setPan({
+        x: startPan.current.x + dx,
+        y: startPan.current.y + dy,
+      });
+    };
+
+    const onMouseUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        setIsPointerDown(false);
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
   }, []);
 
-  // Hỗ trợ Touch: pan 1 ngón, pinch-zoom 2 ngón
+  // Hỗ trợ Touch trên thiết bị di động: pan 1 ngón, pinch-zoom 2 ngón
   const lastTouchDistance = useRef<number | null>(null);
 
   const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
     if (e.touches.length === 1 && e.touches[0]) {
       isDragging.current = true;
+      setIsPointerDown(true);
       startDrag.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       startPan.current = { ...pan };
       lastTouchDistance.current = null;
     } else if (e.touches.length === 2 && e.touches[0] && e.touches[1]) {
       isDragging.current = false;
+      setIsPointerDown(false);
       const t1 = e.touches[0];
       const t2 = e.touches[1];
       lastTouchDistance.current = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
@@ -155,6 +183,7 @@ export default function MapPage() {
 
   const handleTouchEnd = useCallback(() => {
     isDragging.current = false;
+    setIsPointerDown(false);
     lastTouchDistance.current = null;
   }, []);
 
@@ -245,21 +274,20 @@ export default function MapPage() {
                 </div>
               </div>
 
-              {/* Khung chứa SVG bản đồ tràn viền, chạm kéo hoặc ctrl+cuộn chuột */}
-              {/* ponytail: khung kéo/zoom bằng chuột-chạm; bàn phím dùng nút zoom ở toolbar và marker cây (là <button> trong SVG) */}
-              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+              {/* Khung chứa SVG bản đồ tràn viền, nắm kéo hoặc Shift + cuộn chuột */}
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- role="application" là đúng ngữ nghĩa cho canvas pan/zoom; thao tác bàn phím đã có ở nút Zoom +/- và Mặc định */}
               <div
                 ref={stageRef}
                 role="application"
                 aria-label="Khung bản đồ: kéo để di chuyển, Shift + lăn chuột để thu phóng"
-                className="relative min-h-0 w-full flex-1 cursor-grab touch-none overflow-hidden rounded-md bg-surface-sunken active:cursor-grabbing"
+                className={`relative min-h-0 w-full flex-1 touch-none overflow-hidden rounded-md bg-surface-sunken select-none ${
+                  isPointerDown ? 'cursor-grabbing' : 'cursor-grab'
+                }`}
                 onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
               >
                 <FarmMapSvg
                   layers={farmQuery.data.mapLayers}

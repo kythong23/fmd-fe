@@ -55,6 +55,55 @@ export function FarmMapSvg({
     >
       <rect x="0" y="0" width={layers.viewBox.width} height={layers.viewBox.height} fill="var(--color-surface-sunken)" />
 
+      {/* Lớp đường giao thông: vẽ 2 lượt (lớp nền lề đường -> lớp thảm nhựa -> tim đường) để triệt tiêu đè chồng tại các giao lộ */}
+      {visible.roads && (
+        <g id="roads-network">
+          {/* Lượt 1: Lề đường / móng đường xám sẫm (vẽ tất cả các nhánh để tự động hòa hợp tại ngã 3, ngã 4) */}
+          {layers.roads.map((road) => (
+            <polyline
+              key={'subbase-' + road.id}
+              points={toPoints(road.points)}
+              fill="none"
+              stroke="#334155"
+              strokeWidth={road.width + 3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+
+          {/* Lượt 2: Mặt đường nhựa asphalts xám hiện đại (#475569 / #3f4e65) */}
+          {layers.roads.map((road) => (
+            <polyline
+              key={'surface-' + road.id}
+              points={toPoints(road.points)}
+              fill="none"
+              stroke={road.color ?? '#475569'}
+              strokeWidth={road.width}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+
+          {/* Bo tròn mềm mại tâm ngã ba tại điểm giao nhau (840, 550) */}
+          <circle cx={840} cy={550} r={22} fill="#475569" />
+
+          {/* Lượt 3: Vạch kẻ tim đường màu trắng / vàng đứt nét chuẩn giao thông */}
+          {layers.roads.map((road) => (
+            <polyline
+              key={'marking-' + road.id}
+              points={toPoints(road.points)}
+              fill="none"
+              stroke="#fef08a"
+              strokeWidth={1.8}
+              strokeDasharray="10 8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.9}
+            />
+          ))}
+        </g>
+      )}
+
       {visible.boundary && (
         <polygon
           points={toPoints(layers.boundary.points)}
@@ -90,18 +139,6 @@ export function FarmMapSvg({
           />
         ))}
 
-      {visible.roads &&
-        layers.roads.map((road) => (
-          <polyline
-            key={road.id}
-            points={toPoints(road.points)}
-            fill="none"
-            stroke="var(--color-secondary)"
-            strokeWidth={road.width}
-            strokeLinecap="round"
-            opacity={0.45}
-          />
-        ))}
 
       {visible.reservoir && layers.reservoir && (
         <polygon

@@ -1,4 +1,4 @@
-import { latLngToXY } from '@/utils/geo';
+import { xyToLatLng } from '@/utils/geo';
 import type {
   ActionTaken,
   ActivityType,
@@ -13,7 +13,7 @@ import { FARM_ID, MAP_ANCHORS } from './farm.seed';
 
 /**
  * Seed 30 cây sinh bằng PRNG cố định — đủ phủ mọi trạng thái/giống/lô mà không
- * phải chép tay 700 dòng dữ liệu. ponytail: đổi sang dump dữ liệu thật khi có BE.
+ * phải chép tay 700 dòng dữ liệu.
  */
 function makeRandom(seed: number) {
   let state = seed;
@@ -65,7 +65,6 @@ const ACTIVITY_TYPE: Record<ActionTaken, ActivityType> = {
   none: 'health_check',
 };
 
-/** Nhãn hoạt động sinh từ actionTaken — BE sẽ làm việc này (04_API §2.2) */
 export function activityLabelFor(action: ActionTaken): string {
   return ACTIVITY_LABEL[action] ?? ACTIVITY_LABEL.none;
 }
@@ -86,7 +85,6 @@ const DESCRIPTIONS = [
 const ACTIONS: ActionTaken[] = ['watering', 'fertilizing', 'spraying', 'pruning', 'treatment', 'none'];
 
 const DAY_MS = 86_400_000;
-/** Mốc thời gian cố định để dữ liệu seed không đổi theo ngày chạy */
 const SEED_NOW = Date.parse('2026-09-12T02:00:00.000Z');
 
 function buildHistory(
@@ -128,28 +126,49 @@ function buildHistory(
   return records;
 }
 
+// 30 vị trí cây bố trí theo hàng lối thẳng tắp chuẩn nông trại thông minh (3 hàng x 10 cây)
+// Mọi cây cách cạnh ranh giới tối thiểu ~40px nên cả tán, vòng trạng thái lẫn nhãn mã đều nằm trong thửa
+const TREE_GRID_LAYOUT = [
+  // Hàng 1 (phía Bắc, bám theo cạnh trên dốc nhẹ lên phải)
+  { x: 200, y: 308 }, { x: 265, y: 303 }, { x: 340, y: 298 }, { x: 410, y: 293 }, { x: 480, y: 288 },
+  { x: 550, y: 283 }, { x: 620, y: 278 }, { x: 690, y: 273 }, { x: 760, y: 268 }, { x: 820, y: 263 },
+
+  // Hàng 2 (giữa thửa)
+  { x: 180, y: 375 }, { x: 250, y: 370 }, { x: 320, y: 365 }, { x: 395, y: 360 }, { x: 470, y: 355 },
+  { x: 545, y: 350 }, { x: 620, y: 345 }, { x: 695, y: 340 }, { x: 765, y: 335 }, { x: 825, y: 330 },
+
+  // Hàng 3 (phía Nam, men theo cạnh đáy lồi gập ở giữa)
+  { x: 195, y: 455 }, { x: 265, y: 447 }, { x: 335, y: 438 }, { x: 410, y: 428 }, { x: 485, y: 418 },
+  { x: 555, y: 410 }, { x: 625, y: 402 }, { x: 690, y: 396 }, { x: 750, y: 392 }, { x: 800, y: 388 },
+];
+
 function buildTrees(): { trees: Tree[]; history: HistoryRecord[] } {
   const random = makeRandom(20260915);
   const trees: Tree[] = [];
   const history: HistoryRecord[] = [];
 
-  for (let index = 0; index < 30; index += 1) {
+  for (let index = 0; index < TREE_GRID_LAYOUT.length; index += 1) {
     const code = 'SD-' + String(index + 1).padStart(3, '0');
     const id = 'tree-' + String(index + 1).padStart(3, '0');
-    const blockIndex = index % BLOCKS.length;
-    const block = BLOCKS[blockIndex];
-    const rowNumber = Math.floor(index / BLOCKS.length) + 1;
+    const rowNumber = Math.floor(index / 10) + 1;
+    const block = BLOCKS[rowNumber - 1] ?? 'A';
     const status = STATUS_LIST[Math.floor(random() * STATUS_LIST.length)];
     const score = Math.max(0, Math.min(100, BASE_SCORE[status] + Math.round(random() * 6 - 3)));
 
-    // lat/lng là dữ liệu gốc; mapPoint chỉ là lớp hiển thị dẫn xuất (09_DECISIONS D5)
-    const coordinates = {
-      lat: 10.4614 - blockIndex * 0.0009 - (rowNumber % 2) * 0.00012,
-      lng: 107.2156 + rowNumber * 0.00021,
-    };
+    const mapPoint = TREE_GRID_LAYOUT[index]!;
+    // Chuyển pixel chuẩn sang GPS để đảm bảo đồng nhất GPS và vị trí bản đồ
+    const coordinates = xyToLatLng(mapPoint, MAP_ANCHORS) ?? { lat: 10.46, lng: 107.216 };
+
     const plantedYear = 2015 + (index % 8);
     const historyCount = 2 + Math.floor(random() * 4);
-    const treeHistory = buildHistory(id, code, status, random, historyCount, index % 5 === 0 ? 18 + Math.floor(random() * 9) : Math.floor(random() * 6));
+    const treeHistory = buildHistory(
+      id,
+      code,
+      status,
+      random,
+      historyCount,
+      index % 5 === 0 ? 18 + Math.floor(random() * 9) : Math.floor(random() * 6),
+    );
     history.push(...treeHistory);
 
     trees.push({
@@ -161,9 +180,9 @@ function buildTrees(): { trees: Tree[]; history: HistoryRecord[] } {
       location: {
         block,
         row: String(rowNumber),
-        position: String((index % 4) + 1),
+        position: String((index % 10) + 1),
         coordinates,
-        mapPoint: latLngToXY(coordinates, MAP_ANCHORS),
+        mapPoint,
         bedName: 'Liếp ' + block + '-' + String(rowNumber).padStart(2, '0'),
         moundNumber: 'Mô ' + (index + 1),
       },

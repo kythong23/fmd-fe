@@ -5,12 +5,15 @@ export type BenchmarkSource = 'google' | 'manual' | 'gps_device' | 'default';
 export interface CadastralBenchmark {
   code: string;
   name: string;
+  plotNumber: string;
+  address: string;
   lat: number;
   lng: number;
   elevationMeters: number | null;
   datum: string;
   zone: string;
   source: BenchmarkSource;
+  updatedAt: string;
 }
 
 /** Điểm mốc biết cả lat/lng lẫn pixel trên ảnh nền — đầu vào của utils/geo.ts */
@@ -32,6 +35,8 @@ export interface MapPath {
   label: string;
   points: XY[];
   width: number;
+  color?: string;
+  fill?: string;
 }
 
 export interface MapFacility {
@@ -56,10 +61,11 @@ export interface Farm {
   id: string;
   name: string;
   techLead: string;
+  estimatedTreeCount: number;
+  publicViewEnabled: boolean;
   offlineSyncEnabled: boolean;
-  plotNumber: string;
-  address: string;
   benchmark: CadastralBenchmark;
+  /** ponytail: bản đồ vẫn dựng từ seed cục bộ — API /farm chưa trả mapLayers */
   mapLayers: MapLayers;
   updatedAt: string;
 }
@@ -67,6 +73,7 @@ export interface Farm {
 export interface FarmSettingsInput {
   name: string;
   techLead: string;
+  estimatedTreeCount: number;
   offlineSyncEnabled: boolean;
 }
 

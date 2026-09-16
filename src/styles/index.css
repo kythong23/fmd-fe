@@ -102,6 +102,9 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* clip (không phải hidden) — chặn tràn ngang mà không tạo scroll container mới,
+       giữ position: sticky của Header hoạt động */
+    overflow-x: clip;
   }
   body {
     margin: 0;
@@ -110,11 +113,15 @@
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: 1.5;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
   :focus-visible {
     outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
+  }
+  /* Media không bao giờ đẩy layout rộng hơn khung cha */
+  img, svg, video, canvas, iframe, table {
+    max-width: 100%;
   }
   h1, h2, h3, h4 {
     margin: 0;
@@ -137,6 +144,19 @@
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes toast-timer {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+@utility animate-slide-in-right { animation: slide-in-right var(--transition-base) both; }
+@utility animate-toast-timer {
+  transform-origin: left;
+  animation: toast-timer linear both;
 }
 @utility animate-fade-in { animation: fade-in var(--transition-base) both; }
 @utility animate-slide-up { animation: slide-up var(--transition-base) both; }

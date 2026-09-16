@@ -16,6 +16,8 @@ export type { RadioOption } from './Radio';
 export { Select } from './Select';
 export type { SelectOption } from './Select';
 export { Skeleton } from './Skeleton';
+export { StatusModal } from './StatusModal';
+export type { StatusModalProps, StatusTone } from './StatusModal';
 export { Table } from './Table';
 export type { Column, SortState } from './Table';
 export { Tabs } from './Tabs';

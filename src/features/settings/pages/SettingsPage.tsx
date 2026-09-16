@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Save, MapPin } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout/PageContainer';
-import { Button, Card, Checkbox, Input, Skeleton, useToast } from '@/components/ui';
+import { Button, Card, Checkbox, Input, Skeleton, StatusModal, useToast } from '@/components/ui';
 import { StateBoundary } from '@/components/shared/StateBoundary';
 import { ErrorState } from '@/components/shared/ErrorState';
 import { DateText } from '@/components/shared/DateText';
@@ -13,6 +13,7 @@ import { ROUTES } from '@/constants/routes';
 interface SettingsForm {
   name: string;
   techLead: string;
+  estimatedTreeCount: number;
   offlineSyncEnabled: boolean;
 }
 
@@ -23,6 +24,7 @@ export default function SettingsPage() {
   const benchmarkMutation = useUpdateBenchmark();
   const [coordinateInput, setCoordinateInput] = useState('');
   const [coordinateError, setCoordinateError] = useState<string | null>(null);
+  const [saveResult, setSaveResult] = useState<'success' | 'error' | null>(null);
 
   const farm = farmQuery.data;
 
@@ -31,14 +33,19 @@ export default function SettingsPage() {
       ? {
           name: farm.name,
           techLead: farm.techLead,
+          estimatedTreeCount: farm.estimatedTreeCount,
           offlineSyncEnabled: farm.offlineSyncEnabled,
         }
       : undefined,
   });
 
   async function onSubmit(values: SettingsForm) {
-    await settingsMutation.mutateAsync(values);
-    toast.success('Đã lưu cài đặt vườn');
+    try {
+      await settingsMutation.mutateAsync(values);
+      setSaveResult('success');
+    } catch {
+      setSaveResult('error');
+    }
   }
 
   async function onSaveBenchmark() {
@@ -95,6 +102,13 @@ export default function SettingsPage() {
               <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                 <Input label="Tên vườn" required {...register('name', { required: true })} />
                 <Input label="Kỹ thuật viên trưởng ca" {...register('techLead')} />
+                <Input
+                  label="Tổng số cây vườn đang có"
+                  type="number"
+                  min={0}
+                  error={formState.errors.estimatedTreeCount ? 'Nhập số cây hợp lệ (≥ 0)' : undefined}
+                  {...register('estimatedTreeCount', { required: true, valueAsNumber: true, min: 0 })}
+                />
                 <Checkbox
                   label="Bật đồng bộ ngoại tuyến"
                   hint="Chuẩn bị cho giai đoạn 2 — MVP chưa xử lý hàng đợi offline."
@@ -135,6 +149,26 @@ export default function SettingsPage() {
                   <dt className="text-caption text-text-muted">Kinh độ</dt>
                   <dd className="font-mono">{farm.benchmark.lng.toFixed(6)}</dd>
                 </div>
+                <div>
+                  <dt className="text-caption text-text-muted">Số thửa / tờ bản đồ</dt>
+                  <dd>{farm.benchmark.plotNumber}</dd>
+                </div>
+                <div>
+                  <dt className="text-caption text-text-muted">Cao độ</dt>
+                  <dd className="font-mono">
+                    {farm.benchmark.elevationMeters === null
+                      ? '—'
+                      : farm.benchmark.elevationMeters + ' m'}
+                  </dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-caption text-text-muted">Địa chỉ</dt>
+                  <dd>{farm.benchmark.address}</dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-caption text-text-muted">Kinh tuyến trục</dt>
+                  <dd>{farm.benchmark.zone}</dd>
+                </div>
               </dl>
 
               <div className="flex flex-col gap-3">
@@ -169,6 +203,23 @@ export default function SettingsPage() {
           </div>
         )}
       </StateBoundary>
+
+      <StatusModal
+        open={saveResult !== null}
+        tone={saveResult === 'error' ? 'error' : 'success'}
+        title={saveResult === 'error' ? 'Lưu cài đặt thất bại' : 'Đã lưu cài đặt vườn!'}
+        description={
+          saveResult === 'error'
+            ? (settingsMutation.error?.message ?? 'Thử lại sau ít phút hoặc báo quản trị viên.')
+            : 'Thông tin vườn đã cập nhật cho mọi tài khoản đang dùng.'
+        }
+        actionLabel={saveResult === 'error' ? 'Thử lại' : undefined}
+        onAction={() => {
+          setSaveResult(null);
+          void handleSubmit(onSubmit)();
+        }}
+        onClose={() => setSaveResult(null)}
+      />
     </PageContainer>
   );
 }

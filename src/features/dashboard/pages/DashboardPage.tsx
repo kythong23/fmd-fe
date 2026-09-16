@@ -7,6 +7,7 @@ import { StateBoundary } from '@/components/shared/StateBoundary';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { TreeCard } from '@/features/trees/components/TreeCard';
 import { useFarm, useTrees } from '@/hooks/tree-queries';
+import { useIsDesktop } from '@/hooks/use-media-query';
 import { useUi } from '@/stores/ui-context';
 import { ROUTES, STALE_UPDATE_DAYS } from '@/constants/routes';
 import { daysSince } from '@/utils/date';
@@ -16,6 +17,7 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { openScanner } = useUi();
   const treesQuery = useTrees();
+  const isDesktop = useIsDesktop();
   const farmQuery = useFarm();
 
   const trees = useMemo(() => treesQuery.data ?? [], [treesQuery.data]);
@@ -98,63 +100,70 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_23rem]">
-          <Card>
-            <Card.Header>
-              <Card.Title>Cây cần chú ý</Card.Title>
-              <span className="text-caption text-text-muted">
-                Có vấn đề hoặc quá {STALE_UPDATE_DAYS} ngày chưa cập nhật
-              </span>
-            </Card.Header>
-
-            {attention.length === 0 ? (
-              <EmptyState
-                icon={CheckCircle2}
-                title="Không có cây nào cần chú ý"
-                description="Toàn bộ cây đều khỏe và được cập nhật gần đây. Tiếp tục duy trì lịch kiểm tra."
-              />
-            ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
-                {attention.map((tree) => (
-                  <TreeCard key={tree.code} tree={tree} />
-                ))}
-              </div>
-            )}
-          </Card>
-
-          <Card>
-            <Card.Header>
-              <Card.Title>Bản đồ vườn</Card.Title>
-            </Card.Header>
-            {farmQuery.data ? (
-              <iframe
-                title="Bản đồ vườn trên Google Maps"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                // ponytail: embed keyless của Google Maps — đổi sang Maps Embed API + VITE_GOOGLE_MAPS_KEY nếu cần tắt logo/tùy biến marker
-                src={
-                  'https://maps.google.com/maps?q=' +
-                  farmQuery.data.benchmark.lat +
-                  ',' +
-                  farmQuery.data.benchmark.lng +
-                  '&z=18&t=k&hl=vi&output=embed'
-                }
-                className="h-56 w-full rounded-md border border-border"
-              />
-            ) : (
-              <Skeleton className="h-56 w-full" />
-            )}
-            <Button
-              variant="secondary"
-              fullWidth
-              className="mt-3"
+        <Card className="mt-6">
+          <Card.Header>
+            <Card.Title>Bản đồ vườn</Card.Title>
+            <button
+              type="button"
+              className="text-caption text-primary hover:underline"
               onClick={() => navigate(ROUTES.map)}
-              leftIcon={<Map className="size-5" />}
             >
-              Xem bản đồ đầy đủ
-            </Button>
-          </Card>
-        </div>
+              Mở bản đồ toàn màn hình →
+            </button>
+          </Card.Header>
+          {farmQuery.data ? (
+            <iframe
+              title="Bản đồ vườn trên Google Maps"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              // ponytail: embed keyless của Google Maps — đổi sang Maps Embed API + VITE_GOOGLE_MAPS_KEY nếu cần tắt logo/tùy biến marker
+              src={
+                'https://maps.google.com/maps?q=' +
+                farmQuery.data.benchmark.lat +
+                ',' +
+                farmQuery.data.benchmark.lng +
+                // Màn laptop rộng hơn -> zoom thêm 1 bậc (z chỉ nhận số nguyên)
+                (isDesktop ? '&z=18' : '&z=17') +
+                '&t=k&hl=vi&output=embed'
+              }
+              className="h-56 w-full rounded-md border border-border md:h-72 lg:h-96"
+            />
+          ) : (
+            <Skeleton className="h-56 w-full md:h-72 lg:h-96" />
+          )}
+          <Button
+            variant="secondary"
+            fullWidth
+            className="mt-3"
+            onClick={() => navigate(ROUTES.map)}
+            leftIcon={<Map className="size-5" />}
+          >
+            Xem bản đồ đầy đủ
+          </Button>
+        </Card>
+
+        <Card className="mt-6">
+          <Card.Header>
+            <Card.Title>Cây cần chú ý</Card.Title>
+            <span className="text-caption text-text-muted">
+              Có vấn đề hoặc quá {STALE_UPDATE_DAYS} ngày chưa cập nhật
+            </span>
+          </Card.Header>
+
+          {attention.length === 0 ? (
+            <EmptyState
+              icon={CheckCircle2}
+              title="Không có cây nào cần chú ý"
+              description="Toàn bộ cây đều khỏe và được cập nhật gần đây. Tiếp tục duy trì lịch kiểm tra."
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {attention.map((tree) => (
+                <TreeCard key={tree.code} tree={tree} />
+              ))}
+            </div>
+          )}
+        </Card>
       </StateBoundary>
     </PageContainer>
   );
