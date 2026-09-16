@@ -1,0 +1,28 @@
+@media print {
+  /* Ẩn toàn bộ khung layout — chỉ in vùng đánh dấu data-print-area */
+  [data-print-hide],
+  header[data-app-header],
+  nav[data-app-nav] {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  [data-print-area] {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  [data-print-card] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #94a3b8;
+  }
+
+  @page {
+    margin: 10mm;
+  }
+}
