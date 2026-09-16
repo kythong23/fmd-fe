@@ -10,6 +10,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   error?: string;
   size?: ControlSize;
   leftIcon?: ReactNode;
+  rightSlot?: ReactNode;
   hideLabel?: boolean;
   containerClassName?: string;
 }
@@ -22,6 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     required,
     size = 'md',
     leftIcon,
+    rightSlot,
     hideLabel,
     containerClassName,
     className,
@@ -59,10 +61,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
               controlSize[size],
               controlTone(invalid),
               Boolean(leftIcon) && 'pl-10',
+              Boolean(rightSlot) && 'pr-10',
               className,
             )}
             {...rest}
           />
+          {rightSlot && (
+            <span className="absolute inset-y-0 right-1 flex items-center">{rightSlot}</span>
+          )}
         </div>
       )}
     </Field>

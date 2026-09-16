@@ -65,11 +65,27 @@ export function setAuthToken(token: string | null): void {
   authToken = token;
 }
 
+/** AuthProvider đăng ký hàm đổi refreshToken lấy accessToken mới (null = phiên đã chết) */
+let refresher: (() => Promise<string | null>) | null = null;
+let refreshing: Promise<string | null> | null = null;
+
+export function setTokenRefresher(fn: (() => Promise<string | null>) | null): void {
+  refresher = fn;
+}
+
+/** Nhiều request 401 cùng lúc chỉ gọi /auth/refresh một lần */
+function refreshOnce(): Promise<string | null> {
+  refreshing ??= refresher!().finally(() => {
+    refreshing = null;
+  });
+  return refreshing;
+}
+
 /**
  * Fetch wrapper duy nhất chạm mạng. Các *.service.ts hiện dùng mock;
  * khi có BE thật chỉ cần gọi hàm này trong thân service, không sửa component.
  */
-export async function http<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function http<T>(path: string, init: RequestInit = {}, canRetry = true): Promise<T> {
   const controller = new AbortController();
   const timer = window.setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -83,6 +99,12 @@ export async function http<T>(path: string, init: RequestInit = {}): Promise<T> 
         ...init.headers,
       },
     });
+
+    // 401 → thử refresh đúng một lần rồi gọi lại. Bỏ qua chính các endpoint /auth/* để không lặp vô hạn.
+    if (response.status === 401 && canRetry && refresher && !path.startsWith('/auth/')) {
+      window.clearTimeout(timer);
+      if (await refreshOnce()) return http<T>(path, init, false);
+    }
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as ApiErrorBody | null;

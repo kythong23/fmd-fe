@@ -112,7 +112,7 @@ export default function QrManagementPage() {
       >
         <div
           data-print-area
-          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-3"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6 print:grid-cols-3"
         >
           {printable.map((tree) => (
             <QrCard

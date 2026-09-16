@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="80" height="80" fill="none">
+  <!-- Top green leaf with outline and delicate veins like image -->
+  <g id="leaf" transform="translate(18, 4)">
+    <!-- Leaf body tilted gracefully -->
+    <path 
+      d="M32 40 C28 26 36 10 52 2 C68 12 70 32 50 44 C42 48 35 44 32 40 Z" 
+      fill="#a0cb5b" 
+      stroke="#204b1e" 
+      stroke-width="3" 
+      stroke-linejoin="round"
+    />
+    <!-- Primary stem/vein -->
+    <path 
+      d="M34 40 C42 32 50 22 56 4" 
+      stroke="#204b1e" 
+      stroke-width="2.5" 
+      stroke-linecap="round"
+    />
+    <!-- Lateral veins -->
+    <path d="M41 33 C46 31 52 33 55 35" stroke="#204b1e" stroke-width="2" stroke-linecap="round" />
+    <path d="M47 24 C52 22 58 24 62 27" stroke="#204b1e" stroke-width="2" stroke-linecap="round" />
+    <path d="M52 14 C56 12 61 14 65 17" stroke="#204b1e" stroke-width="2" stroke-linecap="round" />
+    <path d="M40 30 C37 28 35 25 34 22" stroke="#204b1e" stroke-width="2" stroke-linecap="round" />
+    <path d="M46 21 C43 18 41 15 41 12" stroke="#204b1e" stroke-width="2" stroke-linecap="round" />
+  </g>
+
+  <!-- Durian fruit body -->
+  <g id="fruit" transform="translate(24, 38)">
+    <!-- Main golden yellow silhouette filled with spiked contour -->
+    <path 
+      d="M 36,0 
+         C 46,2 54,8 60,18 
+         C 68,32 68,52 58,68 
+         C 48,80 32,84 20,80 
+         C 6,74 -2,58 0,40 
+         C 2,24 12,8 24,2 
+         Z" 
+      fill="#e4b025" 
+      stroke="#b57e10" 
+      stroke-width="2"
+    />
+    <!-- Realistic dense spikes around the rim and body -->
+    <!-- Spike texture group -->
+    <path 
+      d="
+        M14 6 L12 2 L19 5 L22 0 L27 4 L32 1 L36 5 L42 2 L45 7 L52 5 L53 11 L60 11 L58 17 L65 19 L62 25 L68 28 L64 34 L69 39 L63 44 L67 50 L60 54 L62 61 L54 63 L54 70 L46 70 L43 76 L36 74 L32 79 L25 76 L20 79 L16 73 L10 74 L8 67 L2 65 L4 58 L-1 54 L3 47 L-2 42 L3 36 L0 30 L6 26 L2 20 L9 17 L7 11 L14 10 Z
+      " 
+      fill="#dfa61c" 
+      stroke="#a37009" 
+      stroke-width="2" 
+      stroke-linejoin="round"
+    />
+    
+    <!-- Dense spiky dots/triangles mimicking thorns across the body -->
+    <g stroke="#946306" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M18 18 L21 21 L24 18" />
+      <path d="M28 15 L31 18 L34 15" />
+      <path d="M38 17 L41 20 L44 17" />
+      <path d="M48 21 L51 24 L54 21" />
+
+      <path d="M14 28 L17 31 L20 28" />
+      <path d="M24 25 L27 29 L30 25" />
+      <path d="M34 26 L37 30 L40 26" />
+      <path d="M44 28 L47 32 L50 28" />
+      <path d="M53 32 L56 35 L59 32" />
+
+      <path d="M12 39 L15 43 L19 39" />
+      <path d="M22 37 L26 42 L30 37" />
+      <path d="M33 38 L37 43 L41 38" />
+      <path d="M44 39 L47 44 L51 39" />
+      <path d="M53 43 L56 47 L58 43" />
+
+      <path d="M14 51 L18 55 L22 51" />
+      <path d="M25 49 L29 54 L33 49" />
+      <path d="M36 50 L40 55 L44 50" />
+      <path d="M46 52 L49 56 L52 52" />
+
+      <path d="M18 63 L22 67 L26 63" />
+      <path d="M28 62 L32 66 L36 62" />
+      <path d="M38 63 L41 67 L44 63" />
+
+      <path d="M24 71 L28 75 L32 71" />
+      <path d="M33 72 L36 76 L39 72" />
+    </g>
+  </g>
+</svg>

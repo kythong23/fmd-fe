@@ -26,13 +26,13 @@ export const FARM_SEED: Farm = {
   name: 'Durian Farm — Nông trại Sầu riêng Thông minh',
   techLead: 'Nguyễn Văn An',
   offlineSyncEnabled: false,
-  plotNumber: 'Thửa 142, Tờ 08',
-  address: 'Xã Xuân Sơn, huyện Châu Đức, tỉnh Bà Rịa — Vũng Tàu',
+  plotNumber: 'Thửa 35, Tờ 24',
+  address: 'Phường Hàng Gòn, TP. Long Khánh, tỉnh Đồng Nai',
   benchmark: {
     code: 'M0-TT',
     name: 'Mốc trắc địa trung tâm vườn',
-    lat: 10.4604,
-    lng: 107.2165,
+    lat: 10.8734664,
+    lng: 107.2065857,
     elevationMeters: 42.5,
     datum: 'VN-2000 / WGS-84',
     zone: 'Kinh tuyến trục 107°45′',
@@ -42,14 +42,39 @@ export const FARM_SEED: Farm = {
     viewBox: { width: 1000, height: 700 },
     boundary: {
       id: 'boundary',
-      label: 'Ranh giới thửa đất',
+      label: 'Ranh giới thửa đất (Tờ 24 - Thửa 35)',
       points: [
-        { x: 90, y: 70 },
-        { x: 620, y: 50 },
-        { x: 930, y: 190 },
-        { x: 910, y: 630 },
-        { x: 400, y: 660 },
-        { x: 110, y: 470 },
+        // Điểm A: Góc tây bắc thấp (đầu cạnh 46.9m)
+        { x: 120, y: 245 },
+        // Cạnh 46.9m dốc nhẹ lên sang phải
+        { x: 308, y: 228 },
+        // Rãnh bậc thụt xuống 8.1m
+        { x: 308, y: 260 },
+        // Chân góc thụt
+        { x: 326, y: 258 },
+        // Cạnh 137.0m chạy ngang sang phải (hơi dốc nhẹ lên)
+        { x: 874, y: 210 },
+        // Cạnh phải giáp đường lớn dọc xuống: hơi uốn lượn nhẹ
+        { x: 880, y: 240 },
+        { x: 880, y: 285 },
+        { x: 868, y: 350 },
+        { x: 846, y: 405 },
+        // Bo cua vòng xuống cạnh đáy phía đông nam
+        { x: 818, y: 450 },
+        { x: 780, y: 472 },
+        // Cạnh đáy lồi gập ở giữa: từ đông nam (780, 472) chếch lên đỉnh gập ở giữa
+        { x: 672, y: 442 },
+        // Đỉnh uốn của đường ở giữa đáy
+        { x: 630, y: 442 },
+        // Từ đỉnh uốn dốc chéo xuống tây nam men theo đường cong (58.6m, 34.8m)
+        { x: 395, y: 508 },
+        { x: 205, y: 546 },
+        // Đoạn vát góc tây nam (14.0m)
+        { x: 138, y: 502 },
+        // Cạnh trái bo cong lượn dọc mương: đi lên uốn cong nhẹ sang trái
+        { x: 108, y: 425 },
+        { x: 92, y: 350 },
+        { x: 96, y: 290 },
       ],
     },
     beds: [

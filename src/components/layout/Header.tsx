@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router';
-import { Menu, LogOut, QrCode, Sprout } from 'lucide-react';
-import { Avatar, Button, Drawer, Dropdown } from '@/components/ui';
+import { Menu, LogOut, QrCode } from 'lucide-react';
+import { Avatar, Button, Drawer, Dropdown, useToast } from '@/components/ui';
 import { useDisclosure } from '@/hooks/use-disclosure';
 import { useAuth } from '@/stores/auth-context';
+import { toAppError } from '@/services/http';
 import { useUi } from '@/stores/ui-context';
 import { ROLE_LABEL } from '@/constants/roles';
 import { ROUTES } from '@/constants/routes';
@@ -14,9 +15,15 @@ export function Header() {
   const { openScanner } = useUi();
   const navigate = useNavigate();
   const drawer = useDisclosure();
+  const toast = useToast();
 
   async function handleLogout() {
-    await logout();
+    try {
+      toast.success(await logout());
+    } catch (error) {
+      const { message, status } = toAppError(error);
+      toast.error(status ? `${message} (${status})` : message);
+    }
     navigate(ROUTES.login, { replace: true });
   }
 
@@ -41,10 +48,14 @@ export function Header() {
 
         <Link
           to={ROUTES.dashboard}
-          className="flex items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="flex items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
-          <Sprout aria-hidden className="size-6 text-primary" />
-          <span className="text-h4 font-extrabold text-text-primary">Durian QR</span>
+          <img 
+            src="/logo-icon.png" 
+            alt="Durian QR Logo" 
+            className="size-8 rounded-lg object-contain shadow-xs" 
+          />
+          <span className="text-h4 font-extrabold tracking-tight text-text-primary">Durian QR</span>
         </Link>
 
         <div className="ml-auto flex items-center gap-2">

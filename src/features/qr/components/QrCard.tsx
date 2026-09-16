@@ -51,7 +51,7 @@ export function QrCard({ tree, selected, onToggle }: QrCardProps) {
       </p>
       <p className="text-caption break-all text-text-muted">{treeQrUrl(tree.code)}</p>
 
-      <div data-print-hide className="mt-2 flex w-full gap-2">
+      <div data-print-hide className="mt-2 grid w-full grid-cols-2 gap-2">
         <Button
           variant="secondary"
           size="sm"

@@ -4,17 +4,18 @@ export interface User {
   id: string;
   farmId: string;
   fullName: string;
-  username: string;
+  email: string;
   role: UserRole;
   assignedBlock: string | null;
 }
 
 export interface LoginInput {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface Session {
   user: User;
-  token: string;
+  accessToken: string;
+  refreshToken: string;
 }

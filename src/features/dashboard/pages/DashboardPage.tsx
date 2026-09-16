@@ -5,25 +5,12 @@ import { PageContainer, PageHeader } from '@/components/layout/PageContainer';
 import { Button, Card, Skeleton } from '@/components/ui';
 import { StateBoundary } from '@/components/shared/StateBoundary';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { HealthScore } from '@/components/shared/HealthScore';
-import { DateText } from '@/components/shared/DateText';
-import { FarmMapSvg } from '@/components/shared/FarmMapSvg';
+import { TreeCard } from '@/features/trees/components/TreeCard';
 import { useFarm, useTrees } from '@/hooks/tree-queries';
 import { useUi } from '@/stores/ui-context';
 import { ROUTES, STALE_UPDATE_DAYS } from '@/constants/routes';
 import { daysSince } from '@/utils/date';
 import { StatCard } from '../components/StatCard';
-
-const ALL_LAYERS = {
-  boundary: true,
-  beds: true,
-  canals: false,
-  roads: false,
-  reservoir: false,
-  facilities: false,
-  trees: true,
-} as const;
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -127,26 +114,11 @@ export default function DashboardPage() {
                 description="Toàn bộ cây đều khỏe và được cập nhật gần đây. Tiếp tục duy trì lịch kiểm tra."
               />
             ) : (
-              <ul className="flex flex-col gap-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
                 {attention.map((tree) => (
-                  <li key={tree.code}>
-                    <button
-                      type="button"
-                      onClick={() => navigate(ROUTES.tree(tree.code))}
-                      className="flex w-full min-h-11 flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-left transition-colors hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-text-primary">{tree.code}</span>
-                        <StatusBadge status={tree.status} />
-                      </span>
-                      <span className="flex items-center gap-3 text-caption text-text-muted">
-                        <HealthScore score={tree.healthScore} />
-                        <DateText value={tree.lastUpdated} variant="relative" />
-                      </span>
-                    </button>
-                  </li>
+                  <TreeCard key={tree.code} tree={tree} />
                 ))}
-              </ul>
+              </div>
             )}
           </Card>
 
@@ -155,20 +127,20 @@ export default function DashboardPage() {
               <Card.Title>Bản đồ vườn</Card.Title>
             </Card.Header>
             {farmQuery.data ? (
-              <button
-                type="button"
-                onClick={() => navigate(ROUTES.map)}
-                aria-label="Mở bản đồ vườn đầy đủ"
-                className="w-full rounded-md border border-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
-              >
-                <FarmMapSvg
-                  layers={farmQuery.data.mapLayers}
-                  trees={trees}
-                  visible={ALL_LAYERS}
-                  markerSize={7}
-                  className="h-56 w-full"
-                />
-              </button>
+              <iframe
+                title="Bản đồ vườn trên Google Maps"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                // ponytail: embed keyless của Google Maps — đổi sang Maps Embed API + VITE_GOOGLE_MAPS_KEY nếu cần tắt logo/tùy biến marker
+                src={
+                  'https://maps.google.com/maps?q=' +
+                  farmQuery.data.benchmark.lat +
+                  ',' +
+                  farmQuery.data.benchmark.lng +
+                  '&z=18&t=k&hl=vi&output=embed'
+                }
+                className="h-56 w-full rounded-md border border-border"
+              />
             ) : (
               <Skeleton className="h-56 w-full" />
             )}

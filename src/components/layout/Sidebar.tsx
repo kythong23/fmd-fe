@@ -1,5 +1,4 @@
 import { NavLink } from 'react-router';
-import { Sprout } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/stores/auth-context';
 import { NAV_ITEMS } from './navigation';
@@ -48,8 +47,8 @@ export function Sidebar() {
       <SidebarNav />
       <div className="mt-4 border-t border-border p-4">
         <p className="flex items-center gap-2 text-caption text-text-muted">
-          <Sprout aria-hidden className="size-4" />
-          Durian QR — MVP
+          <img src="/logo-icon.png" alt="Durian QR Logo" className="size-4.5 rounded-sm object-contain" />
+          Durian QR — Quản lý vườn thông minh
         </p>
       </div>
     </aside>

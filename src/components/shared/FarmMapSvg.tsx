@@ -58,9 +58,10 @@ export function FarmMapSvg({
       {visible.boundary && (
         <polygon
           points={toPoints(layers.boundary.points)}
-          fill="var(--color-surface)"
-          stroke="var(--color-border-strong)"
-          strokeWidth={3}
+          fill="rgba(244, 114, 182, 0.12)"
+          stroke="#10b981"
+          strokeWidth={4}
+          strokeLinejoin="round"
         />
       )}
 
