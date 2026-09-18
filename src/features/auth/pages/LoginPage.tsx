@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Navigate, useNavigate, useSearchParams } from 'react-router';
@@ -27,6 +27,15 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   });
+
+  // Tự động đăng nhập khi chạy script kiểm thử / chụp ảnh giao diện
+  useEffect(() => {
+    if (searchParams.get('auto') === '1' && !isAuthenticated) {
+      void login({ email: 'manager@durian.vn', password: 'thailevan1974' }).then(() => {
+        navigate(redirectTo, { replace: true });
+      });
+    }
+  }, [searchParams, isAuthenticated, login, navigate, redirectTo]);
 
   if (isAuthenticated) return <Navigate to={redirectTo} replace />;
 

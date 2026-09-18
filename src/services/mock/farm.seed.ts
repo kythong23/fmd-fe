@@ -3,7 +3,7 @@ import type { Farm, MapAnchor } from '@/types';
 export const FARM_ID = 'farm-0001';
 
 /**
- * 2 điểm mốc neo ảnh nền: biết cả lat/lng lẫn pixel trên bản vẽ 1000×700.
+ * 2 điểm mốc neo ảnh nền: biết cả lat/lng lẫn pixel trên bản vẽ 1024×512.
  * utils/geo.ts dùng đúng 2 điểm này để quy đổi (05_FRONTEND §6.7).
  */
 export const MAP_ANCHORS: MapAnchor[] = [
@@ -11,13 +11,13 @@ export const MAP_ANCHORS: MapAnchor[] = [
     id: 'M1',
     label: 'Mốc góc Tây Bắc',
     latLng: { lat: 10.462, lng: 107.215 },
-    xy: { x: 100, y: 80 },
+    xy: { x: 247, y: 92 },
   },
   {
     id: 'M4',
     label: 'Mốc góc Đông Nam',
     latLng: { lat: 10.4588, lng: 107.2185 },
-    xy: { x: 900, y: 620 },
+    xy: { x: 812, y: 300 },
   },
 ];
 
@@ -42,145 +42,168 @@ export const FARM_SEED: Farm = {
     updatedAt: '2026-09-01T02:00:00.000Z',
   },
   mapLayers: {
-    viewBox: { width: 1000, height: 700 },
+    viewBox: { width: 1024, height: 512 },
     boundary: {
       id: 'boundary',
-      label: 'Ranh giới thửa đất (Tờ 24 - Thửa 35)',
+      label: 'Ranh giới thửa đất (Theo ảnh vệ tinh)',
       points: [
-        // Điểm A: Góc tây bắc thấp (đầu cạnh 46.9m)
-        { x: 120, y: 245 },
-        // Cạnh 46.9m dốc nhẹ lên sang phải
-        { x: 308, y: 228 },
-        // Rãnh bậc thụt xuống 8.1m
-        { x: 308, y: 260 },
-        // Chân góc thụt
-        { x: 326, y: 258 },
-        // Cạnh 137.0m chạy ngang sang phải (hơi dốc nhẹ lên)
-        { x: 874, y: 210 },
-        // Cạnh phải giáp đường lớn dọc xuống: hơi uốn lượn nhẹ
-        { x: 880, y: 240 },
-        { x: 880, y: 285 },
-        { x: 868, y: 350 },
-        { x: 846, y: 405 },
-        // Bo cua vòng xuống cạnh đáy phía đông nam
-        { x: 818, y: 450 },
-        { x: 780, y: 472 },
-        // Cạnh đáy lồi gập ở giữa: từ đông nam (780, 472) chếch lên đỉnh gập ở giữa
-        { x: 672, y: 442 },
-        // Đỉnh uốn của đường ở giữa đáy
-        { x: 630, y: 442 },
-        // Từ đỉnh uốn dốc chéo xuống tây nam men theo đường cong (58.6m, 34.8m)
-        { x: 395, y: 508 },
-        { x: 205, y: 546 },
-        // Đoạn vát góc tây nam (14.0m)
-        { x: 138, y: 502 },
-        // Cạnh trái bo cong lượn dọc mương: đi lên uốn cong nhẹ sang trái
-        { x: 108, y: 425 },
-        { x: 92, y: 350 },
-        { x: 96, y: 290 },
+        // Cạnh Bắc: một nét thẳng dài chạy xiên lên phía Đông
+        { x: 243, y: 93 },
+        { x: 812, y: 9 },
+        // Cạnh Đông gần như thẳng đứng, hơi nghiêng vào trong
+        { x: 806, y: 128 },
+        { x: 797, y: 205 },
+        { x: 790, y: 248 },
+        // Góc Đông Nam vát chéo
+        { x: 742, y: 272 },
+        { x: 690, y: 282 },
+        // Cạnh Nam thẳng, chỉ gãy nhẹ ở giữa
+        { x: 470, y: 301 },
+        { x: 262, y: 318 },
+        // Cạnh Tây gấp bậc
+        { x: 247, y: 262 },
+        { x: 224, y: 243 },
+        { x: 214, y: 205 },
+        { x: 224, y: 158 },
       ],
     },
-    beds: [
-      { id: 'bed-a', label: 'Liếp A', points: bedPoints(160, 140) },
-      { id: 'bed-b', label: 'Liếp B', points: bedPoints(160, 310) },
-      { id: 'bed-c', label: 'Liếp C', points: bedPoints(160, 480) },
-    ],
-    canals: [
-      {
-        id: 'canal-1',
-        label: 'Mương chính',
-        width: 14,
-        points: [
-          { x: 120, y: 250 },
-          { x: 860, y: 250 },
-        ],
-      },
-      {
-        id: 'canal-2',
-        label: 'Mương nhánh',
-        width: 10,
-        points: [
-          { x: 120, y: 420 },
-          { x: 860, y: 420 },
-        ],
-      },
-    ],
+    beds: [],
+    canals: [],
     roads: [
       {
-        id: 'road-south',
-        label: 'Đường liên ấp phía Nam',
-        width: 36,
-        color: '#475569',
+        id: 'road-north',
+        label: 'Đường nhánh phía Bắc',
+        width: 11,
         points: [
-          { x: -50, y: 390 },
-          { x: 95, y: 520 },
-          { x: 175, y: 566 },
-          { x: 385, y: 535 },
-          { x: 630, y: 468 },
-          { x: 672, y: 468 },
-          { x: 780, y: 502 },
-          { x: 840, y: 550 },
-          { x: 920, y: 620 },
-          { x: 1060, y: 730 },
+          { x: 690, y: -10 },
+          { x: 742, y: 6 },
+          { x: 788, y: 24 },
+          { x: 815, y: 44 },
         ],
       },
       {
         id: 'road-east',
         label: 'Đường trục chính phía Đông',
-        width: 38,
-        color: '#475569',
+        width: 12,
         points: [
-          { x: 895, y: -40 },
-          { x: 900, y: 220 },
-          { x: 896, y: 275 },
-          { x: 885, y: 350 },
-          { x: 864, y: 425 },
-          { x: 840, y: 490 },
-          { x: 840, y: 550 },
+          { x: 815, y: 44 },
+          { x: 824, y: 120 },
+          { x: 820, y: 205 },
+          { x: 806, y: 262 },
+          { x: 792, y: 300 },
         ],
       },
       {
-        id: 'road-branch-se',
-        label: 'Đường nhánh Đông Nam',
-        width: 28,
-        color: '#475569',
+        id: 'road-east-spur',
+        label: 'Đường rẽ khu dân cư Đông Bắc',
+        width: 9,
         points: [
-          { x: 840, y: 550 },
-          { x: 940, y: 505 },
-          { x: 1040, y: 460 },
+          { x: 818, y: 62 },
+          { x: 880, y: 48 },
+          { x: 950, y: 36 },
+          { x: 1034, y: 28 },
+        ],
+      },
+      {
+        id: 'road-south',
+        label: 'Đường liên ấp Đli Thái Thiên',
+        width: 12,
+        points: [
+          { x: 792, y: 300 },
+          { x: 700, y: 292 },
+          { x: 600, y: 296 },
+          { x: 500, y: 304 },
+          { x: 400, y: 312 },
+          { x: 300, y: 320 },
+          { x: 258, y: 330 },
+          { x: 195, y: 322 },
+          { x: 110, y: 306 },
+          { x: -10, y: 288 },
+        ],
+      },
+      {
+        id: 'road-west-branch',
+        label: 'Nhánh đường phía Tây Nam',
+        width: 11,
+        points: [
+          { x: 222, y: 326 },
+          { x: 243, y: 372 },
+          { x: 258, y: 420 },
+          { x: 266, y: 466 },
+        ],
+      },
+      {
+        id: 'road-center-south',
+        label: 'Đường nhánh giữa phía Nam',
+        width: 12,
+        points: [
+          { x: 452, y: 308 },
+          { x: 456, y: 380 },
+          { x: 452, y: 445 },
+          { x: 448, y: 522 },
+        ],
+      },
+      {
+        id: 'road-southwest-leg',
+        label: 'Đường rẽ Tây Nam ngã ba',
+        width: 11,
+        points: [
+          { x: 792, y: 300 },
+          { x: 760, y: 352 },
+          { x: 732, y: 412 },
+          { x: 716, y: 470 },
+          { x: 712, y: 522 },
+        ],
+      },
+      {
+        id: 'road-southeast-leg',
+        label: 'Đường rẽ Đông Nam ngã ba',
+        width: 11,
+        points: [
+          { x: 792, y: 300 },
+          { x: 852, y: 342 },
+          { x: 920, y: 392 },
+          { x: 986, y: 448 },
+          { x: 1034, y: 492 },
         ],
       },
     ],
-    reservoir: {
-      id: 'reservoir',
-      label: 'Hồ trữ nước',
-      points: [
-        { x: 740, y: 520 },
-        { x: 860, y: 520 },
-        { x: 880, y: 600 },
-        { x: 760, y: 610 },
-      ],
-    },
+    reservoir: null,
     facilities: [
-      { id: 'gate', label: 'Cổng chính', kind: 'gate', position: { x: 500, y: 60 } },
-      { id: 'office', label: 'Nhà điều hành', kind: 'office', position: { x: 210, y: 90 } },
-      { id: 'store', label: 'Kho vật tư', kind: 'store', position: { x: 300, y: 90 } },
-      { id: 'pump', label: 'Trạm bơm', kind: 'pump', position: { x: 800, y: 470 } },
-      { id: 'weather', label: 'Trạm khí tượng', kind: 'weather', position: { x: 650, y: 610 } },
-      { id: 'packing', label: 'Khu sơ chế', kind: 'packing', position: { x: 380, y: 90 } },
+      {
+        id: 'warehouse',
+        label: 'Nhà chính / Kho xưởng',
+        kind: 'warehouse',
+        position: { x: 487, y: 73 },
+        width: 148,
+        height: 30,
+        rotation: -5,
+      },
+      {
+        id: 'residence',
+        label: 'Nhà ở gia đình',
+        kind: 'office',
+        position: { x: 752, y: 112 },
+        width: 58,
+        height: 28,
+        rotation: -4,
+      },
+      {
+        id: 'store',
+        label: 'Kho kỹ thuật',
+        kind: 'store',
+        position: { x: 606, y: 117 },
+        width: 30,
+        height: 22,
+      },
+      {
+        id: 'gate',
+        label: 'Cổng chính',
+        kind: 'gate',
+        position: { x: 452, y: 306 },
+      },
     ],
     anchors: MAP_ANCHORS,
   },
   updatedAt: '2026-09-01T02:00:00.000Z',
 };
-
-function bedPoints(x: number, y: number) {
-  const width = 680;
-  const height = 110;
-  return [
-    { x, y },
-    { x: x + width, y },
-    { x: x + width, y: y + height },
-    { x, y: y + height },
-  ];
-}

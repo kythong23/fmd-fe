@@ -8,9 +8,10 @@ export interface QrCardProps {
   tree: Tree;
   selected: boolean;
   onToggle: (code: string) => void;
+  className?: string;
 }
 
-export function QrCard({ tree, selected, onToggle }: QrCardProps) {
+export function QrCard({ tree, selected, onToggle, className }: QrCardProps) {
   const { dataUrl, error } = useQrImage(tree.code);
 
   async function downloadSvg() {
@@ -21,7 +22,11 @@ export function QrCard({ tree, selected, onToggle }: QrCardProps) {
   return (
     <div
       data-print-card
-      className="flex flex-col items-center gap-2 rounded-lg border border-border bg-surface p-4 text-center"
+      className={
+        'flex flex-col items-center gap-2 rounded-lg border border-border bg-surface p-4 text-center' +
+        (selected ? ' border-primary ring-2 ring-primary/30' : '') +
+        (className ? ' ' + className : '')
+      }
     >
       <div data-print-hide className="self-start">
         <Checkbox
@@ -47,7 +52,9 @@ export function QrCard({ tree, selected, onToggle }: QrCardProps) {
 
       <p className="font-mono text-h4 font-extrabold text-text-primary">{tree.code}</p>
       <p className="text-caption text-text-secondary">
-        {tree.variety} — Lô {tree.location.block}, hàng {tree.location.row}
+        {tree.activated
+          ? tree.variety + ' — Lô ' + tree.location.block + ', hàng ' + tree.location.row
+          : 'Chưa có thông tin — quét mã để cập nhật'}
       </p>
       <p className="text-caption break-all text-text-muted">{treeQrUrl(tree.code)}</p>
 

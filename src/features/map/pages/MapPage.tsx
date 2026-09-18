@@ -12,8 +12,9 @@ import { MapLegend } from '../components/MapLegend';
 
 const LAYER_LABELS: Array<{ key: MapLayerKey; label: string }> = [
   { key: 'boundary', label: 'Ranh giới thửa' },
+  { key: 'facilities', label: 'Công trình / Nhà ở' },
   { key: 'roads', label: 'Đường giao thông' },
-  { key: 'trees', label: 'Cây' },
+  { key: 'trees', label: 'Cây sầu riêng' },
 ];
 
 const DEFAULT_LAYERS: Record<MapLayerKey, boolean> = {
@@ -22,7 +23,7 @@ const DEFAULT_LAYERS: Record<MapLayerKey, boolean> = {
   canals: false,
   roads: true,
   reservoir: false,
-  facilities: false,
+  facilities: true,
   trees: true,
 };
 
@@ -280,7 +281,7 @@ export default function MapPage() {
                 ref={stageRef}
                 role="application"
                 aria-label="Khung bản đồ: kéo để di chuyển, Shift + lăn chuột để thu phóng"
-                className={`relative min-h-0 w-full flex-1 touch-none overflow-hidden rounded-md bg-surface-sunken select-none ${
+                className={`relative min-h-0 w-full flex-1 touch-none overflow-hidden rounded-md bg-[#5c6551] select-none ${
                   isPointerDown ? 'cursor-grabbing' : 'cursor-grab'
                 }`}
                 onMouseDown={handleMouseDown}

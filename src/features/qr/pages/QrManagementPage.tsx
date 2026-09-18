@@ -46,8 +46,8 @@ export default function QrManagementPage() {
     );
   }
 
-  // In: chỉ những thẻ được chọn; print.css ẩn header/sidebar và chia trang (05_FRONTEND §6.8)
-  const printable = selected.length > 0 ? trees.filter((tree) => selected.includes(tree.code)) : trees;
+  // In: chọn thẻ nào in thẻ đó (không chọn = in tất cả); thẻ ngoài danh sách chỉ ẩn lúc in
+  const printCount = selected.length > 0 ? selected.length : trees.length;
 
   return (
     <PageContainer>
@@ -82,10 +82,10 @@ export default function QrManagementPage() {
         <Button
           variant="secondary"
           onClick={() => window.print()}
-          disabled={printable.length === 0}
+          disabled={printCount === 0}
           leftIcon={<Printer className="size-5" />}
         >
-          In {selected.length > 0 ? selected.length + ' thẻ đã chọn' : 'tất cả'}
+          In {selected.length > 0 ? selected.length + ' mã đã chọn' : 'tất cả'}
         </Button>
       </div>
 
@@ -114,12 +114,13 @@ export default function QrManagementPage() {
           data-print-area
           className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6 print:grid-cols-3"
         >
-          {printable.map((tree) => (
+          {trees.map((tree) => (
             <QrCard
               key={tree.code}
               tree={tree}
               selected={selected.includes(tree.code)}
               onToggle={toggle}
+              className={selected.length > 0 && !selected.includes(tree.code) ? 'print:hidden' : ''}
             />
           ))}
         </div>

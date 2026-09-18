@@ -1,4 +1,4 @@
-import { appError } from './http';
+import { appError, http } from './http';
 import { clone, mockCall } from './mock/db';
 import { nextTreeCode, store } from './mock/store';
 import { activityLabelFor, activityTypeFor } from './mock/trees.seed';
@@ -11,18 +11,46 @@ import type {
   HistoryRecord,
   Tree,
   TreeFilters,
+  TreeLocation,
+  XY,
   UpdateInput,
 } from '@/types';
 
 function matchesFilters(tree: Tree, filters: TreeFilters): boolean {
   if (filters.status && tree.status !== filters.status) return false;
   if (filters.block && tree.location.block !== filters.block) return false;
+  if (filters.activated !== undefined && tree.activated !== filters.activated) return false;
   if (filters.q) {
     const needle = filters.q.trim().toLowerCase();
     const haystack = (tree.code + ' ' + tree.variety + ' ' + tree.location.block).toLowerCase();
     if (!haystack.includes(needle)) return false;
   }
   return true;
+}
+
+/** GET /trees — item phẳng: bedName/moundNumber/mapPosition nằm ngoài location */
+interface TreeApiItem extends Omit<Tree, 'farmId' | 'location' | 'gallery' | 'createdAt'> {
+  location: Omit<TreeLocation, 'mapPoint' | 'bedName' | 'moundNumber'>;
+  mapPosition?: XY | null;
+  bedName?: string | null;
+  moundNumber?: string | null;
+}
+
+function toTree({ mapPosition, bedName, moundNumber, ...item }: TreeApiItem): Tree {
+  const seeded = store.trees.find((t) => t.code === item.code);
+  return {
+    ...item,
+    farmId: FARM_ID,
+    location: {
+      ...item.location,
+      coordinates: seeded?.location.coordinates ?? item.location.coordinates ?? null,
+      mapPoint: seeded?.location.mapPoint ?? mapPosition ?? null,
+      bedName: bedName ?? seeded?.location.bedName ?? null,
+      moundNumber: moundNumber ?? seeded?.location.moundNumber ?? null,
+    },
+    gallery: item.image ? [item.image] : [],
+    createdAt: item.plantedDate,
+  };
 }
 
 function findTree(code: string): Tree {
@@ -44,8 +72,19 @@ function historyOf(code: string): HistoryRecord[] {
  * Khi có BE: thay thân hàm bằng http<T>(...), giữ nguyên signature (05_FRONTEND §13).
  */
 export const treesService = {
-  list: (filters: TreeFilters = {}): Promise<Tree[]> =>
-    mockCall(() => clone(store.trees.filter((tree) => matchesFilters(tree, filters)))),
+  list: async (filters: TreeFilters = {}): Promise<Tree[]> => {
+    const params = new URLSearchParams();
+    if (filters.q) params.set('q', filters.q);
+    if (filters.status) params.set('status', filters.status);
+    if (filters.block) params.set('block', filters.block);
+    if (filters.activated !== undefined) params.set('activated', String(filters.activated));
+    const query = params.toString();
+    const { items } = await http<{ success: boolean; items: TreeApiItem[] }>(
+      '/trees' + (query ? '?' + query : ''),
+    );
+    // Lọc lại phía client: API có thể chưa hỗ trợ đủ tham số lọc
+    return items.map(toTree).filter((tree) => matchesFilters(tree, filters));
+  },
 
   detail: (code: string): Promise<Tree> => mockCall(() => clone(findTree(code))),
 
@@ -87,6 +126,7 @@ export const treesService = {
         farmId: FARM_ID,
         code,
         variety: input.variety,
+        activated: true,
         plantedDate: input.plantedDate,
         location: {
           block: input.block,

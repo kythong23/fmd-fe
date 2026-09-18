@@ -1,15 +1,14 @@
 import { http } from './http';
 import { clone, mockCall } from './mock/db';
-import { FARM_SEED } from './mock/farm.seed';
 import { store } from './mock/store';
 import type { BenchmarkInput, Farm, FarmSettingsInput } from '@/types';
 
 /** GET /farm — phẳng, không có mapLayers, bọc thêm cờ success */
 type FarmResponse = Omit<Farm, 'mapLayers'> & { success: boolean };
 
-/** ponytail: bản đồ vẫn lấy từ seed cục bộ, bỏ khi API trả mapLayers */
-function toFarm({...farm }: FarmResponse): Farm {
-  store.farm = { ...farm, mapLayers: clone(FARM_SEED.mapLayers) };
+/** ponytail: bản đồ vẫn lấy từ store cục bộ (seed, HMR cập nhật được), bỏ khi API trả mapLayers */
+function toFarm({ ...farm }: FarmResponse): Farm {
+  store.farm = { ...farm, mapLayers: clone(store.farm.mapLayers) };
   return store.farm;
 }
 

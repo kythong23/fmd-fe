@@ -1,4 +1,3 @@
-import durianTreeImg from '@/assets/durian-tree.png';
 import { STATUS_CONFIG, TREE_STATUSES } from '@/constants/status-config';
 
 /** Legend bắt buộc: màu + hình dạng ↔ trạng thái (05_FRONTEND §6.7) */
@@ -9,25 +8,17 @@ export function MapLegend() {
         const config = STATUS_CONFIG[status];
         return (
           <li key={status} className="flex items-center gap-2 text-caption text-text-secondary">
-            {/* Thu nhỏ mô phỏng cây sầu riêng với viền trạng thái */}
+            {/* Chấm tán cây trên bản đồ vệ tinh + viền trạng thái */}
             <span
-              className="relative flex size-5 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 bg-surface-sunken shadow-xs"
+              className="flex size-4 shrink-0 rounded-full border-2 bg-[#2c4626]"
               style={{ borderColor: config.colorVar }}
-            >
-              <img
-                src={durianTreeImg}
-                alt=""
-                className="size-full scale-110 object-cover"
-              />
-            </span>
+            />
             {config.label}
           </li>
         );
       })}
       <li className="flex items-center gap-2 text-caption text-text-secondary">
-        <span className="relative flex h-3 w-7 items-center justify-center rounded-xs bg-[#475569] border border-[#334155]">
-          <span className="h-0.5 w-3.5 border-t border-dashed border-[#fef08a]" />
-        </span>
+        <span className="h-2 w-7 rounded-full bg-[#b2b6ae] ring-1 ring-[#8b9086]" />
         Đường giao thông
       </li>
     </ul>

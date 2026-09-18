@@ -126,20 +126,20 @@ function buildHistory(
   return records;
 }
 
-// 30 vị trí cây bố trí theo hàng lối thẳng tắp chuẩn nông trại thông minh (3 hàng x 10 cây)
-// Mọi cây cách cạnh ranh giới tối thiểu ~40px nên cả tán, vòng trạng thái lẫn nhãn mã đều nằm trong thửa
+// 30 vị trí cây sầu riêng bố trí theo các hàng lối thực tế từ ảnh vệ tinh Google Maps
+// Phân bố tập trung ở khu vực phía Tây và trung tâm vườn, chừa lối đi thông thoáng cho đường nội bộ
 const TREE_GRID_LAYOUT = [
-  // Hàng 1 (phía Bắc, bám theo cạnh trên dốc nhẹ lên phải)
-  { x: 200, y: 308 }, { x: 265, y: 303 }, { x: 340, y: 298 }, { x: 410, y: 293 }, { x: 480, y: 288 },
-  { x: 550, y: 283 }, { x: 620, y: 278 }, { x: 690, y: 273 }, { x: 760, y: 268 }, { x: 820, y: 263 },
+  // Hàng 1 (phía Bắc, dưới dãy nhà xưởng)
+  { x: 285, y: 140 }, { x: 325, y: 135 }, { x: 365, y: 130 }, { x: 405, y: 126 }, { x: 445, y: 122 },
+  { x: 485, y: 118 }, { x: 525, y: 115 }, { x: 565, y: 112 }, { x: 648, y: 126 }, { x: 706, y: 150 },
 
-  // Hàng 2 (giữa thửa)
-  { x: 180, y: 375 }, { x: 250, y: 370 }, { x: 320, y: 365 }, { x: 395, y: 360 }, { x: 470, y: 355 },
-  { x: 545, y: 350 }, { x: 620, y: 345 }, { x: 695, y: 340 }, { x: 765, y: 335 }, { x: 825, y: 330 },
+  // Hàng 2 (dải trung tâm vườn)
+  { x: 280, y: 205 }, { x: 320, y: 200 }, { x: 360, y: 196 }, { x: 400, y: 192 }, { x: 440, y: 188 },
+  { x: 480, y: 185 }, { x: 520, y: 182 }, { x: 560, y: 178 }, { x: 645, y: 190 }, { x: 712, y: 205 },
 
-  // Hàng 3 (phía Nam, men theo cạnh đáy lồi gập ở giữa)
-  { x: 195, y: 455 }, { x: 265, y: 447 }, { x: 335, y: 438 }, { x: 410, y: 428 }, { x: 485, y: 418 },
-  { x: 555, y: 410 }, { x: 625, y: 402 }, { x: 690, y: 396 }, { x: 750, y: 392 }, { x: 800, y: 388 },
+  // Hàng 3 (phía Nam, men theo ranh giới đường liên ấp)
+  { x: 290, y: 270 }, { x: 330, y: 266 }, { x: 370, y: 262 }, { x: 410, y: 258 }, { x: 450, y: 254 },
+  { x: 490, y: 250 }, { x: 530, y: 247 }, { x: 570, y: 243 }, { x: 648, y: 245 }, { x: 716, y: 246 },
 ];
 
 function buildTrees(): { trees: Tree[]; history: HistoryRecord[] } {
@@ -176,6 +176,7 @@ function buildTrees(): { trees: Tree[]; history: HistoryRecord[] } {
       farmId: FARM_ID,
       code,
       variety: VARIETY_LIST[index % VARIETY_LIST.length],
+      activated: true,
       plantedDate: plantedYear + '-06-15',
       location: {
         block,

@@ -22,3 +22,26 @@ export function nextTreeCode(): string {
   }, 0);
   return 'SD-' + String(maxNumber + 1).padStart(3, '0');
 }
+
+// HMR: sửa toạ độ trong *.seed.ts thì vá thẳng cache React Query, không reload trang.
+// Chỉ chạy ở dev — bundle production không có import.meta.hot.
+if (import.meta.hot) {
+  import.meta.hot.accept(['./farm.seed', './trees.seed'], async ([farmMod, treesMod]) => {
+    const { queryClient } = await import('@/app/query-client');
+    const { farmKeys, treeKeys } = await import('@/services/query-keys');
+
+    if (farmMod) {
+      const mapLayers = structuredClone(farmMod.FARM_SEED.mapLayers);
+      store.farm = { ...store.farm, mapLayers };
+      // Giữ nguyên các field farm lấy từ API, chỉ thay bản vẽ
+      queryClient.setQueryData(farmKeys.detail(), (old: Farm | undefined) =>
+        old ? { ...old, mapLayers } : old,
+      );
+    }
+    if (treesMod) {
+      store.trees = structuredClone(treesMod.TREES_SEED);
+      store.history = structuredClone(treesMod.HISTORY_SEED);
+      await queryClient.invalidateQueries({ queryKey: treeKeys.all });
+    }
+  });
+}

@@ -55,6 +55,8 @@ export default function TreeListPage() {
     q: debouncedQuery || undefined,
     status: filters.status,
     block: filters.block,
+    // Chỉ cây đã có thông tin — cây ảo (mới sinh QR) chỉ hiện ở màn Quản lý QR
+    activated: true,
   });
 
   const trees = useMemo(() => query.data ?? [], [query.data]);

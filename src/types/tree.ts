@@ -37,6 +37,8 @@ export interface Tree {
   farmId: string;
   code: string;
   variety: TreeVariety;
+  /** false = cây ảo: đã sinh mã QR nhưng chưa có ai nhập thông tin */
+  activated: boolean;
   plantedDate: string;
   location: TreeLocation;
   canopyRadius: number | null;
@@ -62,10 +64,13 @@ export interface TreeFilters {
   q?: string;
   status?: TreeStatus;
   block?: string;
+  activated?: boolean;
 }
 
 export interface CreateTreeInput {
   variety: TreeVariety;
+  /** false = cây ảo: đã sinh mã QR nhưng chưa có ai nhập thông tin */
+  activated: boolean;
   plantedDate: string;
   block: string;
   row: string;

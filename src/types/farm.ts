@@ -44,6 +44,10 @@ export interface MapFacility {
   label: string;
   position: XY;
   kind: string;
+  width?: number;
+  height?: number;
+  rotation?: number;
+  sublabel?: string;
 }
 
 export interface MapLayers {
