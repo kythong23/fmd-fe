@@ -100,8 +100,17 @@
 }
 
 @layer base {
+  @media (min-width: 640px) {
+    html {
+      font-size: 100%;
+    }
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
+    /* Mobile hiển thị mặc định "đã thu nhỏ": mọi kích thước rem co lại 12.5%,
+       khỏi phải chụm 2 ngón zoom out mỗi lần mở app trên iPhone. */
+    font-size: 87.5%;
     /* clip (không phải hidden) — chặn tràn ngang mà không tạo scroll container mới,
        giữ position: sticky của Header hoạt động */
     overflow-x: clip;
@@ -160,6 +169,46 @@
 }
 @utility animate-fade-in { animation: fade-in var(--transition-base) both; }
 @utility animate-slide-up { animation: slide-up var(--transition-base) both; }
+
+/* --- Highlight cây được chọn trên bản đồ ---------------------------------
+   Chỉ animate transform/opacity (GPU-safe). transform-box: fill-box để
+   transform-origin: center bám đúng tâm shape SVG thay vì gốc toạ độ canvas. */
+@keyframes tree-pulse {
+  0%   { transform: scale(0.85); opacity: 0.5; }
+  70%  { opacity: 0; }
+  100% { transform: scale(2.3); opacity: 0; }
+}
+@keyframes tree-glow {
+  0%, 100% { transform: scale(1); opacity: 0.32; }
+  50%      { transform: scale(1.12); opacity: 0.5; }
+}
+@utility tree-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tree-pulse 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@utility tree-pulse-delayed {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tree-pulse 2.4s cubic-bezier(0.22, 1, 0.36, 1) 1.2s infinite;
+}
+@utility tree-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tree-glow 3.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+/* Vòng focus bo tròn thay cho outline chữ nhật mặc định của trình duyệt */
+.tree-marker,
+.tree-marker:focus,
+.tree-marker:focus-visible {
+  outline: none;
+}
+.tree-marker .tree-focus-ring {
+  opacity: 0;
+}
+.tree-marker:focus-visible .tree-focus-ring {
+  opacity: 1;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

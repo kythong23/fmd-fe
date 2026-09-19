@@ -48,36 +48,47 @@ export const TreeMarker = memo(function TreeMarker({
             }
           : undefined
       }
-      className={`transition-transform duration-150 ${
-        onSelect ? 'cursor-pointer hover:scale-115 focus-visible:outline-hidden' : ''
-      }`}
+      className={`tree-marker transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        selected ? 'scale-112' : ''
+      } ${onSelect ? 'cursor-pointer hover:scale-110' : ''}`}
       style={{ transformOrigin: `${x}px ${y}px` }}
     >
       <title>{label}</title>
 
-      {/* Hiệu ứng chọn cây (Vòng neon kép nổi bật xung quanh tán) */}
+      {/* Vòng focus bàn phím (bo tròn, chỉ hiện khi :focus-visible) */}
+      <circle
+        className="tree-focus-ring pointer-events-none"
+        cx={x}
+        cy={y}
+        r={r + 4}
+        fill="none"
+        stroke="var(--color-focus-ring)"
+        strokeWidth={1.5}
+      />
+
+      {/* Highlight cây đang chọn: quầng sáng thở + 2 vòng sóng lan toả so le */}
       {selected && (
-        <>
+        <g className="pointer-events-none">
+          <circle className="tree-glow" cx={x} cy={y} r={r + 4.5} fill="var(--color-primary)" />
           <circle
+            className="tree-pulse"
             cx={x}
             cy={y}
-            r={r + 6}
+            r={r + 2}
             fill="none"
             stroke="var(--color-primary)"
-            strokeWidth={2.5}
-            strokeDasharray="5 3"
-            opacity={0.9}
+            strokeWidth={1.6}
           />
           <circle
+            className="tree-pulse-delayed"
             cx={x}
             cy={y}
-            r={r + 10}
+            r={r + 2}
             fill="none"
             stroke="var(--color-primary)"
-            strokeWidth={1}
-            opacity={0.45}
+            strokeWidth={1.2}
           />
-        </>
+        </g>
       )}
 
       {/* Đổ bóng tán cây tự nhiên xuống nền đất */}
@@ -148,30 +159,6 @@ export const TreeMarker = memo(function TreeMarker({
         </g>
       )}
 
-      {/* Nhãn mã số cây (Pill badge hiển thị mã định danh rõ nét) */}
-      <g transform={`translate(${x}, ${y - r - 5.5})`} className="pointer-events-none select-none">
-        <rect
-          x="-13"
-          y="-6"
-          width="26"
-          height="12"
-          rx="3.5"
-          fill="rgba(15, 23, 42, 0.88)"
-          stroke="rgba(255, 255, 255, 0.2)"
-          strokeWidth="0.75"
-        />
-        <text
-          x="0"
-          y="2.4"
-          textAnchor="middle"
-          fill="#ffffff"
-          fontSize="7.5"
-          fontWeight="bold"
-          fontFamily="ui-monospace, monospace"
-        >
-          {code}
-        </text>
-      </g>
     </g>
   );
 });

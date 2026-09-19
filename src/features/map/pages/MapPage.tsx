@@ -11,13 +11,17 @@ import { TreeQuickPanel } from '../components/TreeQuickPanel';
 import { MapLegend } from '../components/MapLegend';
 
 const LAYER_LABELS: Array<{ key: MapLayerKey; label: string }> = [
+  { key: 'satellite', label: 'Ảnh thực địa (Ngoại cảnh)' },
+  { key: 'whiteCanvas', label: 'Layout trắng thửa đất (Custom)' },
   { key: 'boundary', label: 'Ranh giới thửa' },
-  { key: 'facilities', label: 'Công trình / Nhà ở' },
-  { key: 'roads', label: 'Đường giao thông' },
+  { key: 'roads', label: 'Đường nội bộ' },
+  { key: 'facilities', label: 'Nhà kho / Công trình' },
   { key: 'trees', label: 'Cây sầu riêng' },
 ];
 
 const DEFAULT_LAYERS: Record<MapLayerKey, boolean> = {
+  satellite: true,
+  whiteCanvas: true,
   boundary: true,
   beds: false,
   canals: false,
@@ -30,13 +34,15 @@ const DEFAULT_LAYERS: Record<MapLayerKey, boolean> = {
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.25;
+// ponytail: đọc 1 lần lúc mount, không theo dõi resize — xoay ngang máy vẫn giữ zoom hiện tại
+const DEFAULT_ZOOM = () => (window.matchMedia('(max-width: 639px)').matches ? 0.75 : 1);
 
 export default function MapPage() {
   const navigate = useNavigate();
   const farmQuery = useFarm();
   const treesQuery = useTrees();
   const [visible, setVisible] = useState(DEFAULT_LAYERS);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
@@ -56,7 +62,7 @@ export default function MapPage() {
   }, []);
 
   const handleReset = useCallback(() => {
-    setZoom(1);
+    setZoom(DEFAULT_ZOOM());
     setPan({ x: 0, y: 0 });
   }, []);
 
@@ -189,7 +195,7 @@ export default function MapPage() {
   }, []);
 
   return (
-    <div className="flex h-[calc(100dvh-4rem)] flex-col overflow-hidden px-3 py-2 sm:px-5 sm:py-3 lg:px-6">
+    <div className="flex flex-col px-3 py-2 sm:px-5 sm:py-3 lg:px-6 xl:h-[calc(100dvh-4rem)] xl:overflow-hidden">
       <div className="mb-2 flex shrink-0 items-center justify-between">
         <div>
           <h1 className="text-h3 font-extrabold tracking-tight text-text-primary">Bản đồ vườn</h1>
@@ -281,7 +287,7 @@ export default function MapPage() {
                 ref={stageRef}
                 role="application"
                 aria-label="Khung bản đồ: kéo để di chuyển, Shift + lăn chuột để thu phóng"
-                className={`relative min-h-0 w-full flex-1 touch-none overflow-hidden rounded-md bg-[#5c6551] select-none ${
+                className={`relative aspect-[1024/510] min-h-[50dvh] w-full sm:min-h-0 flex-1 touch-none overflow-hidden rounded-md bg-[#242b24] select-none xl:aspect-auto ${
                   isPointerDown ? 'cursor-grabbing' : 'cursor-grab'
                 }`}
                 onMouseDown={handleMouseDown}
@@ -307,7 +313,7 @@ export default function MapPage() {
             </Card>
 
             {/* Cột thông tin phụ bên phải */}
-            <div className="flex flex-col gap-3 overflow-y-auto">
+            <div className="flex flex-col gap-3 xl:overflow-y-auto">
               <Card padding="sm" className="shrink-0">
                 <Card.Header>
                   <Card.Title>Lớp hiển thị</Card.Title>

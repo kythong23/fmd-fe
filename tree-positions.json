@@ -1,0 +1,422 @@
+[
+  {
+    "code": "SD-001",
+    "mapPosition": {
+      "x": 285,
+      "y": 140
+    },
+    "coordinates": {
+      "lat": 10.4612615,
+      "lng": 107.2152354
+    },
+    "block": "A",
+    "row": "1",
+    "position": "1"
+  },
+  {
+    "code": "SD-002",
+    "mapPosition": {
+      "x": 325,
+      "y": 135
+    },
+    "coordinates": {
+      "lat": 10.4613385,
+      "lng": 107.2154832
+    },
+    "block": "A",
+    "row": "1",
+    "position": "2"
+  },
+  {
+    "code": "SD-003",
+    "mapPosition": {
+      "x": 365,
+      "y": 130
+    },
+    "coordinates": {
+      "lat": 10.4614154,
+      "lng": 107.215731
+    },
+    "block": "A",
+    "row": "1",
+    "position": "3"
+  },
+  {
+    "code": "SD-004",
+    "mapPosition": {
+      "x": 405,
+      "y": 126
+    },
+    "coordinates": {
+      "lat": 10.4614769,
+      "lng": 107.2159788
+    },
+    "block": "A",
+    "row": "1",
+    "position": "4"
+  },
+  {
+    "code": "SD-005",
+    "mapPosition": {
+      "x": 445,
+      "y": 122
+    },
+    "coordinates": {
+      "lat": 10.4615385,
+      "lng": 107.2162265
+    },
+    "block": "A",
+    "row": "1",
+    "position": "5"
+  },
+  {
+    "code": "SD-006",
+    "mapPosition": {
+      "x": 485,
+      "y": 118
+    },
+    "coordinates": {
+      "lat": 10.4616,
+      "lng": 107.2164743
+    },
+    "block": "A",
+    "row": "1",
+    "position": "6"
+  },
+  {
+    "code": "SD-007",
+    "mapPosition": {
+      "x": 525,
+      "y": 115
+    },
+    "coordinates": {
+      "lat": 10.4616462,
+      "lng": 107.2167221
+    },
+    "block": "A",
+    "row": "1",
+    "position": "7"
+  },
+  {
+    "code": "SD-008",
+    "mapPosition": {
+      "x": 565,
+      "y": 112
+    },
+    "coordinates": {
+      "lat": 10.4616923,
+      "lng": 107.2169699
+    },
+    "block": "A",
+    "row": "1",
+    "position": "8"
+  },
+  {
+    "code": "SD-009",
+    "mapPosition": {
+      "x": 648,
+      "y": 126
+    },
+    "coordinates": {
+      "lat": 10.4614769,
+      "lng": 107.2174841
+    },
+    "block": "A",
+    "row": "1",
+    "position": "9"
+  },
+  {
+    "code": "SD-010",
+    "mapPosition": {
+      "x": 706,
+      "y": 150
+    },
+    "coordinates": {
+      "lat": 10.4611077,
+      "lng": 107.2178434
+    },
+    "block": "A",
+    "row": "1",
+    "position": "10"
+  },
+  {
+    "code": "SD-011",
+    "mapPosition": {
+      "x": 280,
+      "y": 205
+    },
+    "coordinates": {
+      "lat": 10.4602615,
+      "lng": 107.2152044
+    },
+    "block": "B",
+    "row": "2",
+    "position": "1"
+  },
+  {
+    "code": "SD-012",
+    "mapPosition": {
+      "x": 320,
+      "y": 200
+    },
+    "coordinates": {
+      "lat": 10.4603385,
+      "lng": 107.2154522
+    },
+    "block": "B",
+    "row": "2",
+    "position": "2"
+  },
+  {
+    "code": "SD-013",
+    "mapPosition": {
+      "x": 360,
+      "y": 196
+    },
+    "coordinates": {
+      "lat": 10.4604,
+      "lng": 107.2157
+    },
+    "block": "B",
+    "row": "2",
+    "position": "3"
+  },
+  {
+    "code": "SD-014",
+    "mapPosition": {
+      "x": 400,
+      "y": 192
+    },
+    "coordinates": {
+      "lat": 10.4604615,
+      "lng": 107.2159478
+    },
+    "block": "B",
+    "row": "2",
+    "position": "4"
+  },
+  {
+    "code": "SD-015",
+    "mapPosition": {
+      "x": 440,
+      "y": 188
+    },
+    "coordinates": {
+      "lat": 10.4605231,
+      "lng": 107.2161956
+    },
+    "block": "B",
+    "row": "2",
+    "position": "5"
+  },
+  {
+    "code": "SD-016",
+    "mapPosition": {
+      "x": 480,
+      "y": 185
+    },
+    "coordinates": {
+      "lat": 10.4605692,
+      "lng": 107.2164434
+    },
+    "block": "B",
+    "row": "2",
+    "position": "6"
+  },
+  {
+    "code": "SD-017",
+    "mapPosition": {
+      "x": 520,
+      "y": 182
+    },
+    "coordinates": {
+      "lat": 10.4606154,
+      "lng": 107.2166912
+    },
+    "block": "B",
+    "row": "2",
+    "position": "7"
+  },
+  {
+    "code": "SD-018",
+    "mapPosition": {
+      "x": 560,
+      "y": 178
+    },
+    "coordinates": {
+      "lat": 10.4606769,
+      "lng": 107.2169389
+    },
+    "block": "B",
+    "row": "2",
+    "position": "8"
+  },
+  {
+    "code": "SD-019",
+    "mapPosition": {
+      "x": 645,
+      "y": 190
+    },
+    "coordinates": {
+      "lat": 10.4604923,
+      "lng": 107.2174655
+    },
+    "block": "B",
+    "row": "2",
+    "position": "9"
+  },
+  {
+    "code": "SD-020",
+    "mapPosition": {
+      "x": 712,
+      "y": 205
+    },
+    "coordinates": {
+      "lat": 10.4602615,
+      "lng": 107.2178805
+    },
+    "block": "B",
+    "row": "2",
+    "position": "10"
+  },
+  {
+    "code": "SD-021",
+    "mapPosition": {
+      "x": 290,
+      "y": 270
+    },
+    "coordinates": {
+      "lat": 10.4592615,
+      "lng": 107.2152664
+    },
+    "block": "C",
+    "row": "3",
+    "position": "1"
+  },
+  {
+    "code": "SD-022",
+    "mapPosition": {
+      "x": 330,
+      "y": 266
+    },
+    "coordinates": {
+      "lat": 10.4593231,
+      "lng": 107.2155142
+    },
+    "block": "C",
+    "row": "3",
+    "position": "2"
+  },
+  {
+    "code": "SD-023",
+    "mapPosition": {
+      "x": 370,
+      "y": 262
+    },
+    "coordinates": {
+      "lat": 10.4593846,
+      "lng": 107.2157619
+    },
+    "block": "C",
+    "row": "3",
+    "position": "3"
+  },
+  {
+    "code": "SD-024",
+    "mapPosition": {
+      "x": 410,
+      "y": 258
+    },
+    "coordinates": {
+      "lat": 10.4594462,
+      "lng": 107.2160097
+    },
+    "block": "C",
+    "row": "3",
+    "position": "4"
+  },
+  {
+    "code": "SD-025",
+    "mapPosition": {
+      "x": 450,
+      "y": 254
+    },
+    "coordinates": {
+      "lat": 10.4595077,
+      "lng": 107.2162575
+    },
+    "block": "C",
+    "row": "3",
+    "position": "5"
+  },
+  {
+    "code": "SD-026",
+    "mapPosition": {
+      "x": 490,
+      "y": 250
+    },
+    "coordinates": {
+      "lat": 10.4595692,
+      "lng": 107.2165053
+    },
+    "block": "C",
+    "row": "3",
+    "position": "6"
+  },
+  {
+    "code": "SD-027",
+    "mapPosition": {
+      "x": 530,
+      "y": 247
+    },
+    "coordinates": {
+      "lat": 10.4596154,
+      "lng": 107.2167531
+    },
+    "block": "C",
+    "row": "3",
+    "position": "7"
+  },
+  {
+    "code": "SD-028",
+    "mapPosition": {
+      "x": 570,
+      "y": 243
+    },
+    "coordinates": {
+      "lat": 10.4596769,
+      "lng": 107.2170009
+    },
+    "block": "C",
+    "row": "3",
+    "position": "8"
+  },
+  {
+    "code": "SD-029",
+    "mapPosition": {
+      "x": 648,
+      "y": 245
+    },
+    "coordinates": {
+      "lat": 10.4596462,
+      "lng": 107.2174841
+    },
+    "block": "C",
+    "row": "3",
+    "position": "9"
+  },
+  {
+    "code": "SD-030",
+    "mapPosition": {
+      "x": 716,
+      "y": 246
+    },
+    "coordinates": {
+      "lat": 10.4596308,
+      "lng": 107.2179053
+    },
+    "block": "C",
+    "row": "3",
+    "position": "10"
+  }
+]

@@ -97,6 +97,7 @@ export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
         onClose={requestClose}
         title={'Cập nhật tình trạng — ' + code}
         description="Ghi nhận tình trạng thực tế tại vườn. Mô tả là bắt buộc để người sau đọc lại còn hiểu."
+        size="lg"
         footer={
           <>
             <Button variant="secondary" onClick={requestClose} disabled={isSubmitting}>

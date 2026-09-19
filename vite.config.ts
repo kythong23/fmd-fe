@@ -30,9 +30,8 @@ export default defineConfig(({ mode }) => {
     resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
     server: {
       port: PORT,
-      // ponytail: bind đúng 1 IP LAN -> Vite chỉ in 1 dòng Network (bỏ adapter ảo/VPN).
-      // Đánh đổi: mất http://localhost:5173, dùng chính IP này trên máy dev.
-      host: lanIp() || true,
+      // ponytail: bind mọi interface -> Vite in cả http://localhost:5173 và các dòng Network (IPv4 LAN cho QR).
+      host: true,
       // Đổi cổng BE bằng VITE_API_PROXY trong .env, không phải sửa file này
       proxy: { '/api': env.VITE_API_PROXY || 'http://localhost:3001' },
     },

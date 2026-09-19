@@ -51,16 +51,21 @@ export default function QrManagementPage() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Quản lý mã QR"
-        description="Sinh, tải và in thẻ QR dán tại gốc cây. Mã sửa lỗi mức H để chịu được bụi bẩn ngoài vườn."
-        breadcrumbs={[{ label: 'Tổng quan', to: ROUTES.dashboard }, { label: 'Quản lý QR' }]}
-        action={
-          <Button onClick={createModal.open} leftIcon={<Plus className="size-5" />}>
-            Tạo cây mới
-          </Button>
-        }
-      />
+      <div data-print-hide>
+        <PageHeader
+          title="Quản lý mã QR"
+          description="Sinh, tải và in thẻ QR dán tại gốc cây. Mã sửa lỗi mức H để chịu được bụi bẩn ngoài vườn."
+          breadcrumbs={[{ label: 'Tổng quan', to: ROUTES.dashboard }, { label: 'Quản lý QR' }]}
+          action={
+            <Button onClick={createModal.open} leftIcon={<Plus className="size-5" />}>
+              Tạo cây mới
+            </Button>
+          }
+        />
+      </div>
+
+      {/* Tiêu đề duy nhất hiện khi in */}
+      <h2 className="mb-3 hidden text-h3 font-bold text-text-primary print:block">Các mã cần in</h2>
 
       <div data-print-hide className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
         <Input

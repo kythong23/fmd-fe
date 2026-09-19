@@ -44,6 +44,10 @@ export interface MapFacility {
   label: string;
   position: XY;
   kind: string;
+  /** Hình dáng thật (traced từ ảnh nền). Có points thì bỏ qua width/height. */
+  points?: XY[];
+  /** true = mái phẳng 1 màu, không chia 2 dốc */
+  flatRoof?: boolean;
   width?: number;
   height?: number;
   rotation?: number;

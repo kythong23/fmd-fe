@@ -37,16 +37,16 @@ interface TreeApiItem extends Omit<Tree, 'farmId' | 'location' | 'gallery' | 'cr
 }
 
 function toTree({ mapPosition, bedName, moundNumber, ...item }: TreeApiItem): Tree {
-  const seeded = store.trees.find((t) => t.code === item.code);
+  // Toạ độ lấy 100% từ API — không còn fallback về seed cục bộ
   return {
     ...item,
     farmId: FARM_ID,
     location: {
       ...item.location,
-      coordinates: seeded?.location.coordinates ?? item.location.coordinates ?? null,
-      mapPoint: seeded?.location.mapPoint ?? mapPosition ?? null,
-      bedName: bedName ?? seeded?.location.bedName ?? null,
-      moundNumber: moundNumber ?? seeded?.location.moundNumber ?? null,
+      coordinates: item.location.coordinates ?? null,
+      mapPoint: mapPosition ?? null,
+      bedName: bedName ?? null,
+      moundNumber: moundNumber ?? null,
     },
     gallery: item.image ? [item.image] : [],
     createdAt: item.plantedDate,
