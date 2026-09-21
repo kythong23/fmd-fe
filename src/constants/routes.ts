@@ -7,6 +7,7 @@ export const ROUTES = {
   map: '/map',
   qr: '/qr',
   activity: '/activity',
+  materials: '/materials',
   settings: '/settings',
   forbidden: '/403',
 } as const;

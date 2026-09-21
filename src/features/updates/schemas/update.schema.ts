@@ -22,11 +22,7 @@ export const updateSchema = z.object({
   conditions: z.array(
     z.enum(['leaf', 'stem', 'branch', 'flower', 'fruit', 'pest', 'soil', 'other']),
   ),
-  description: z
-    .string()
-    .trim()
-    .min(10, 'Mô tả ít nhất 10 ký tự để người sau đọc còn hiểu')
-    .max(1000, 'Mô tả tối đa 1000 ký tự'),
+  description: z.string().trim().max(1000, 'Mô tả tối đa 1000 ký tự'),
   images: z.array(z.string()),
   height: measurement('height'),
   trunkDiameter: measurement('trunkDiameter'),

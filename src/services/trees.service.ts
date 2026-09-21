@@ -1,7 +1,6 @@
-import { appError, http } from './http';
+import { http } from './http';
 import { clone, mockCall } from './mock/db';
 import { nextTreeCode, store } from './mock/store';
-import { activityLabelFor, activityTypeFor } from './mock/trees.seed';
 import { FARM_ID } from './mock/farm.seed';
 import { computeHealthScore } from '@/utils/health-score';
 import { latLngToXY } from '@/utils/geo';
@@ -53,12 +52,10 @@ function toTree({ mapPosition, bedName, moundNumber, ...item }: TreeApiItem): Tr
   };
 }
 
-function findTree(code: string): Tree {
-  const tree = store.trees.find((item) => item.code === code);
-  if (!tree) {
-    throw appError('NOT_FOUND', { message: 'Không tìm thấy cây mã ' + code });
-  }
-  return tree;
+/** BE có thể trả {item} hoặc tree phẳng — nhận cả hai */
+async function fetchTree(path: string, init?: RequestInit): Promise<Tree> {
+  const response = await http<{ item?: TreeApiItem } & TreeApiItem>(path, init);
+  return toTree(response.item ?? response);
 }
 
 function historyOf(code: string): HistoryRecord[] {
@@ -86,7 +83,7 @@ export const treesService = {
     return items.map(toTree).filter((tree) => matchesFilters(tree, filters));
   },
 
-  detail: (code: string): Promise<Tree> => mockCall(() => clone(findTree(code))),
+  detail: (code: string): Promise<Tree> => fetchTree('/trees/' + code),
 
   history: (code: string): Promise<HistoryRecord[]> => mockCall(() => clone(historyOf(code))),
 
@@ -178,56 +175,9 @@ export const treesService = {
     }),
 
   /**
-   * POST /trees/:code/history — nghiệp vụ lõi (04_API §2).
-   * healthScore và activity do "backend" tính; client không gửi điểm lên.
+   * PATCH /trees/:code — lưu cập nhật hồ sơ cây (API thật).
+   * healthScore/activity do backend tính; client chỉ gửi dữ liệu nhập.
    */
   addUpdate: (code: string, input: UpdateInput): Promise<Tree> =>
-    mockCall(() => {
-      const existing = store.processedRequests.get(input.clientRequestId);
-      if (existing) return clone(findTree(code));
-
-      const tree = findTree(code);
-      const now = new Date().toISOString();
-      const record: HistoryRecord = {
-        id: code + '-h' + (historyOf(code).length + 1),
-        treeId: tree.id,
-        treeCode: code,
-        farmId: tree.farmId,
-        occurredAt: now,
-        activity: activityLabelFor(input.actionTaken),
-        type: activityTypeFor(input.actionTaken),
-        status: input.status,
-        description: input.description,
-        performer: input.performer,
-        dosage: null,
-        measurements: input.measurements,
-        images: input.images,
-        conditions: input.conditions,
-        actionTaken: input.actionTaken,
-        notes: input.notes ?? null,
-      };
-      store.history.push(record);
-      store.processedRequests.set(input.clientRequestId, record);
-
-      tree.status = input.status;
-      tree.healthScore = computeHealthScore(input.status, tree.healthScore);
-      if (input.measurements.height !== undefined) tree.heightMeters = input.measurements.height;
-      if (input.measurements.trunkDiameter !== undefined) {
-        tree.trunkDiameterCm = input.measurements.trunkDiameter;
-      }
-      if (input.measurements.soilMoisture !== undefined) {
-        tree.soilMoisture = input.measurements.soilMoisture;
-      }
-      if (input.measurements.fruitCount !== undefined) {
-        tree.fruitCount = input.measurements.fruitCount;
-      }
-      if (input.images.length > 0) {
-        tree.image = input.images[0];
-        tree.gallery = [...tree.gallery, ...input.images];
-      }
-      tree.lastUpdated = now;
-      tree.lastUpdatedBy = input.performer;
-
-      return clone(tree);
-    }),
+    fetchTree('/trees/' + code, { method: 'PATCH', body: JSON.stringify(input) }),
 };

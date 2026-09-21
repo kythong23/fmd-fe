@@ -1,7 +1,10 @@
-import { NavLink } from 'react-router';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/stores/auth-context';
 import { NAV_ITEMS } from './navigation';
+import type { NavItem } from './navigation';
 
 export interface SidebarProps {
   /** Trong Drawer mobile thì bỏ khung cố định và đóng drawer khi chọn mục */
@@ -9,30 +12,92 @@ export interface SidebarProps {
   embedded?: boolean;
 }
 
+/**
+ * Mục có sub-menu: bấm để đóng/mở, không điều hướng riêng.
+ * ponytail: mục con so khớp cả query string vì NavLink chỉ xét pathname.
+ */
+function NavGroup({ item, current, onNavigate }: { item: NavItem; current: string; onNavigate?: () => void }) {
+  const [open, setOpen] = useState(() => current.startsWith(item.to));
+
+  const rowClass =
+    'flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-body-sm font-semibold transition-colors';
+  const toneClass = (active: boolean) =>
+    active
+      ? 'bg-primary-subtle text-primary-hover'
+      : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary';
+
+  if (!item.children) {
+    return (
+      <NavLink
+        to={item.to}
+        end={item.to === '/'}
+        onClick={onNavigate}
+        className={({ isActive }) => cn(rowClass, toneClass(isActive))}
+      >
+        <item.icon aria-hidden className="size-5 shrink-0" />
+        {item.label}
+      </NavLink>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className={cn(rowClass, toneClass(current.startsWith(item.to)))}
+      >
+        <item.icon aria-hidden className="size-5 shrink-0" />
+        <span className="flex-1 text-left">{item.label}</span>
+        <ChevronDown
+          aria-hidden
+          className={cn('size-4 shrink-0 transition-transform duration-200', open && 'rotate-180')}
+        />
+      </button>
+
+      {/* grid 0fr → 1fr: trượt mở/đóng mà không cần biết chiều cao */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-1 pt-1">
+            {item.children.map((child) => (
+              <NavLink
+                key={child.to}
+                to={child.to}
+                onClick={onNavigate}
+                tabIndex={open ? undefined : -1}
+                className={cn(
+                  'ml-8 flex min-h-10 items-center rounded-md px-3 text-body-sm transition-colors',
+                  current === child.to
+                    ? 'bg-primary-subtle font-semibold text-primary-hover'
+                    : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary',
+                )}
+              >
+                {child.label}
+              </NavLink>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SidebarNav({ onNavigate, embedded = false }: SidebarProps) {
   const { can } = useAuth();
+  const location = useLocation();
+  const current = location.pathname + location.search;
   const items = NAV_ITEMS.filter((item) => !item.permission || can(item.permission));
 
   return (
     <nav aria-label="Điều hướng chính" className={cn('flex flex-col gap-1', !embedded && 'p-4')}>
       {items.map((item) => (
-        <NavLink
-          key={item.to}
-          to={item.to}
-          end={item.to === '/'}
-          onClick={onNavigate}
-          className={({ isActive }) =>
-            cn(
-              'flex min-h-11 items-center gap-3 rounded-md px-3 text-body-sm font-semibold transition-colors',
-              isActive
-                ? 'bg-primary-subtle text-primary-hover'
-                : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary',
-            )
-          }
-        >
-          <item.icon aria-hidden className="size-5 shrink-0" />
-          {item.label}
-        </NavLink>
+        <NavGroup key={item.to} item={item} current={current} onNavigate={onNavigate} />
       ))}
     </nav>
   );

@@ -63,7 +63,6 @@ export function UpdateFormFields({ control, register, errors, disabled }: Update
 
       <Textarea
         label="Mô tả tình trạng"
-        required
         placeholder="Ví dụ: Đọt già đều, không phát hiện rầy. Lá tầng dưới hơi vàng."
         error={errors.description?.message}
         disabled={disabled}

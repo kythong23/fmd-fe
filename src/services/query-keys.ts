@@ -1,4 +1,4 @@
-import type { ActivityFilters, TreeFilters } from '@/types';
+import type { ActivityFilters, MaterialFilters, TreeFilters } from '@/types';
 
 export const treeKeys = {
   all: ['trees'] as const,
@@ -19,4 +19,9 @@ export const activityKeys = {
 
 export const authKeys = {
   me: ['auth', 'me'] as const,
+};
+
+export const materialKeys = {
+  all: ['materials'] as const,
+  list: (filters?: MaterialFilters) => ['materials', 'list', filters ?? {}] as const,
 };
