@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Package } from 'lucide-react';
 import { Avatar, Badge, Card } from '@/components/ui';
 import { DateText } from '@/components/shared/DateText';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -7,7 +7,7 @@ import { ACTIVITY_CONFIG, ACTIVITY_STYLE, PART_TAG_LABEL } from '@/constants/act
 import { formatDate } from '@/utils/date';
 import { formatNumber } from '@/utils/format';
 import { cn } from '@/utils/cn';
-import type { HistoryRecord } from '@/types';
+import type { HistoryRecord, MaterialUsageEntry } from '@/types';
 
 export interface HistoryTimelineProps {
   records: HistoryRecord[];
@@ -102,6 +102,10 @@ export function HistoryTimeline({ records, onTreeClick }: HistoryTimelineProps) 
               const style = ACTIVITY_STYLE[record.type] ?? ACTIVITY_STYLE.health_check;
               const Icon = config.icon;
               const measurements = record.measurements ?? {};
+              // Cả 4 ô đều trống thì ẩn luôn lưới đo — tránh 4 ô "–" lấn át thông tin chính
+              const hasMeasurements = Object.values(measurements).some(
+                (value) => value !== null && value !== undefined,
+              );
               const totalCost = showPrice
                 ? record.materials.reduce(
                     (sum, item) => sum + (item.unitPrice ?? 0) * item.quantity,
@@ -187,21 +191,11 @@ export function HistoryTimeline({ records, onTreeClick }: HistoryTimelineProps) 
                       )}
 
                       {(record.dosage || record.materials.length > 0) && (
-                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md bg-surface-sunken px-3 py-2">
-                          <p className="text-caption text-text-secondary">
-                            <span className="font-semibold text-text-primary">
-                              Vật tư / Liều lượng:{' '}
-                            </span>
-                            {record.materials.length > 0
-                              ? record.materials
-                                  .map((item) => `${item.name} (${formatNumber(item.quantity)} ${item.unit})`)
-                                  .join(' + ')
-                              : record.dosage}
-                          </p>
-                          {totalCost > 0 && (
-                            <Badge variant="neutral">Chi phí: {formatNumber(totalCost, 'đ')}</Badge>
-                          )}
-                        </div>
+                        <MaterialsBlock
+                          materials={record.materials}
+                          dosage={record.dosage}
+                          totalCost={totalCost}
+                        />
                       )}
 
                       {record.images.length > 0 && (
@@ -220,18 +214,20 @@ export function HistoryTimeline({ records, onTreeClick }: HistoryTimelineProps) 
                         </div>
                       )}
 
-                      <dl className="mt-3 grid grid-cols-2 gap-2 border-t border-border pt-3 sm:grid-cols-4">
-                        <Measure label="Chiều cao" value={formatNumber(measurements.height, 'm')} />
-                        <Measure
-                          label="Đường kính"
-                          value={formatNumber(measurements.trunkDiameter, 'cm')}
-                        />
-                        <Measure
-                          label="Độ ẩm đất"
-                          value={formatNumber(measurements.soilMoisture, '%')}
-                        />
-                        <Measure label="Số trái" value={formatNumber(measurements.fruitCount)} />
-                      </dl>
+                      {hasMeasurements && (
+                        <dl className="mt-3 grid grid-cols-2 gap-2 border-t border-border pt-3 sm:grid-cols-4">
+                          <Measure label="Chiều cao" value={formatNumber(measurements.height, 'm')} />
+                          <Measure
+                            label="Đường kính"
+                            value={formatNumber(measurements.trunkDiameter, 'cm')}
+                          />
+                          <Measure
+                            label="Độ ẩm đất"
+                            value={formatNumber(measurements.soilMoisture, '%')}
+                          />
+                          <Measure label="Số trái" value={formatNumber(measurements.fruitCount)} />
+                        </dl>
+                      )}
 
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-caption text-text-muted">
                         <span>
@@ -248,6 +244,78 @@ export function HistoryTimeline({ records, onTreeClick }: HistoryTimelineProps) 
         );
       })}
     </div>
+  );
+}
+
+interface MaterialsBlockProps {
+  materials: MaterialUsageEntry[];
+  dosage: string | null;
+  /** 0 khi user không được xem giá (worker/viewer) — khi đó ẩn cả giá từng dòng */
+  totalCost: number;
+}
+
+/** Vật tư là nội dung chính của bản ghi bón phân/phun thuốc — mỗi vật tư 1 chip, tổng tiền là số, không phải tag */
+function MaterialsBlock({ materials, dosage, totalCost }: MaterialsBlockProps) {
+  const showPrice = totalCost > 0;
+  // 1 vật tư thì giá dòng trùng tổng — chỉ tách giá từng dòng khi có từ 2 vật tư
+  const showLinePrice = showPrice && materials.length > 1;
+  const hasMaterials = materials.length > 0;
+  // Bản ghi cũ/tưới nước chỉ có liều lượng tự do — không gọi là "vật tư"
+  const heading = hasMaterials ? 'Vật tư sử dụng' : 'Liều lượng';
+
+  return (
+    <section
+      aria-label={heading}
+      className="mt-3 w-full max-w-2xl rounded-md border border-border border-l-4 border-l-primary bg-surface px-3 py-2.5"
+    >
+      <p className="flex items-center gap-1.5 text-[10px] font-bold tracking-wide text-text-muted uppercase">
+        <Package className="size-3.5" aria-hidden />
+        {heading}
+      </p>
+
+      {hasMaterials && (
+        <ul className="mt-2 flex flex-wrap gap-1.5">
+          {materials.map((item) => (
+            <li
+              key={item.materialId}
+              className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border bg-surface-sunken px-2 py-1 text-body-sm"
+            >
+              <span className="min-w-0 font-medium text-text-primary">{item.name}</span>
+              <span aria-hidden className="text-text-muted">
+                ·
+              </span>
+              <span className="font-semibold whitespace-nowrap text-text-primary tabular-nums">
+                {formatNumber(item.quantity, item.unit)}
+              </span>
+              {showLinePrice && item.unitPrice !== undefined && (
+                <span className="text-caption whitespace-nowrap text-text-secondary tabular-nums">
+                  ({formatNumber(item.unitPrice * item.quantity, 'đ')})
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {dosage &&
+        (hasMaterials ? (
+          <p className="mt-2 text-body-sm text-text-secondary">
+            <span className="font-semibold text-text-primary">Liều lượng: </span>
+            {dosage}
+          </p>
+        ) : (
+          <p className="mt-1 text-body-sm font-medium text-text-primary">{dosage}</p>
+        ))}
+
+      {showPrice && (
+        <div className="mt-2 flex items-baseline justify-between gap-2 border-t border-dashed border-border pt-2">
+          <span className="text-caption text-text-muted">Tổng chi phí</span>
+          <span className="text-body font-bold text-text-primary tabular-nums">
+            {formatNumber(totalCost, 'đ')}
+          </span>
+        </div>
+      )}
+    </section>
   );
 }
 

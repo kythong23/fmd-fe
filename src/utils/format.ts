@@ -1,8 +1,11 @@
 import { EMPTY_VALUE } from './date';
 
+// Nhóm nghìn bằng dấu phẩy, thập phân bằng dấu chấm — khớp với NumberInput và Input type="number" lúc nhập
+const NUMBER_FMT = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+
 export function formatNumber(value: number | null | undefined, unit?: string): string {
   if (value === null || value === undefined || Number.isNaN(value)) return EMPTY_VALUE;
-  const text = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(value);
+  const text = NUMBER_FMT.format(value);
   return unit ? `${text} ${unit}` : text;
 }
 
