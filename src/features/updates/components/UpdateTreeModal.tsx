@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Save } from 'lucide-react';
 import { Button, Modal, useToast } from '@/components/ui';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { ErrorState } from '@/components/shared/ErrorState';
+import { toAppError } from '@/services/http';
 import { useAuth } from '@/stores/auth-context';
 import { useTree } from '@/hooks/tree-queries';
 import { useAddTreeUpdate } from '../hooks/use-add-update';
@@ -53,6 +53,7 @@ export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
       actionTaken: 'none',
       notes: '',
       performer: user?.fullName ?? '',
+      materials: [],
     },
   });
 
@@ -79,14 +80,19 @@ export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
       notes: values.notes,
       performer: values.performer,
       clientRequestId,
+      // Chỉ gửi materialId + quantity — BE tự tra code/name/unit/unitPrice (04_API §2a)
+      materials: values.materials
+        .filter((row) => row.materialId)
+        .map((row) => ({ materialId: row.materialId, quantity: row.quantity })),
     };
 
     try {
       await mutation.mutateAsync(payload);
       toast.success('Đã lưu cập nhật cho cây ' + code);
       onClose();
-    } catch {
-      // Thất bại: giữ nguyên form, lỗi hiện ở đầu modal kèm nút thử lại (05_FRONTEND §6.6)
+    } catch (error) {
+      // Thất bại: giữ nguyên form, báo lỗi qua toast (không chèn banner lỗi trong modal)
+      toast.error(toAppError(error).message, 'Lưu cập nhật thất bại');
     }
   }
 
@@ -114,16 +120,6 @@ export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
           </>
         }
       >
-        {mutation.isError && (
-          <div className="mb-4">
-            <ErrorState
-              error={mutation.error}
-              title="Lưu cập nhật thất bại"
-              onRetry={() => mutation.reset()}
-            />
-          </div>
-        )}
-
         <form
           id="update-tree-form"
           onSubmit={handleSubmit(onSubmit)}

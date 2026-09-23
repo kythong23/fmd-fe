@@ -15,6 +15,7 @@ const MapPage = lazy(() => import('@/features/map/pages/MapPage'));
 const QrManagementPage = lazy(() => import('@/features/qr/pages/QrManagementPage'));
 const ActivityPage = lazy(() => import('@/features/activity/pages/ActivityPage'));
 const MaterialListPage = lazy(() => import('@/features/materials/pages/MaterialListPage'));
+const VarietyListPage = lazy(() => import('@/features/varieties/pages/VarietyListPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('@/features/auth/pages/NotFoundPage'));
 const DevUiPage = lazy(() => import('@/features/dev/DevUiPage'));
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.map, element: <MapPage /> },
           { path: ROUTES.activity, element: <ActivityPage /> },
           { path: ROUTES.materials, element: <MaterialListPage /> },
+          { path: ROUTES.varieties, element: <VarietyListPage /> },
           { path: ROUTES.forbidden, element: <ForbiddenPage /> },
           ...(import.meta.env.DEV ? [{ path: '/dev/ui', element: <DevUiPage /> }] : []),
           { path: '*', element: <NotFoundPage /> },

@@ -22,6 +22,17 @@ export const ACTIVITY_CONFIG: Record<ActivityType, { label: string; icon: Lucide
 
 export const ACTIVITY_TYPES = Object.keys(ACTIVITY_CONFIG) as ActivityType[];
 
+/** Màu riêng theo loại hoạt động — giúp phân biệt nhanh trên timeline (dùng token màu sẵn có) */
+export const ACTIVITY_STYLE: Record<ActivityType, { icon: string; dot: string }> = {
+  health_check: { icon: 'bg-error-subtle text-error', dot: 'bg-error' },
+  watering: { icon: 'bg-info-subtle text-info', dot: 'bg-info' },
+  fertilizing: { icon: 'bg-success-subtle text-success', dot: 'bg-success' },
+  spraying: { icon: 'bg-warning-subtle text-warning', dot: 'bg-warning' },
+  pruning: { icon: 'bg-secondary-subtle text-secondary-hover', dot: 'bg-secondary-hover' },
+  treatment: { icon: 'bg-neutral-subtle text-neutral', dot: 'bg-neutral' },
+  harvest: { icon: 'bg-primary-subtle text-primary-hover', dot: 'bg-primary' },
+};
+
 export const ACTION_TAKEN_LABEL: Record<ActionTaken, string> = {
   watering: 'Tưới nước',
   fertilizing: 'Bón phân',

@@ -31,12 +31,15 @@ export const NAV_ITEMS: NavItem[] = [
   { to: ROUTES.qr, label: 'Quản lý QR', icon: QrCode, permission: 'qr:manage', mobile: true },
   {
     to: ROUTES.materials,
-    label: 'Danh mục vật tư',
+    label: 'Danh mục',
     icon: Package,
-    children: MATERIAL_TYPES.map((type) => ({
-      to: ROUTES.materials + '?type=' + type,
-      label: MATERIAL_TYPE_CONFIG[type].label,
-    })),
+    children: [
+      ...MATERIAL_TYPES.map((type) => ({
+        to: ROUTES.materials + '?type=' + type,
+        label: MATERIAL_TYPE_CONFIG[type].label,
+      })),
+      { to: ROUTES.varieties, label: 'Cây giống' },
+    ],
   },
   { to: ROUTES.settings, label: 'Cài đặt vườn', icon: Settings, permission: 'farm:settings' },
 ];

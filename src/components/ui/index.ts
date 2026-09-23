@@ -10,6 +10,7 @@ export { Dropdown } from './Dropdown';
 export { Field } from './Field';
 export { Input } from './Input';
 export { Modal } from './Modal';
+export { NumberInput } from './NumberInput';
 export { Pagination } from './Pagination';
 export { RadioGroup } from './Radio';
 export type { RadioOption } from './Radio';

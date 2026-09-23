@@ -78,3 +78,11 @@ export interface CreateTreeInput {
   status: TreeStatus;
   notes?: string;
 }
+
+/** Payload PATCH /trees/:code — sửa hồ sơ cây, không đổi tình trạng/lịch sử (04_API §1) */
+export type UpdateTreeProfileInput = Partial<Omit<CreateTreeInput, 'status'>>;
+
+/** Payload PATCH /trees/:code/position — kéo-thả bản đồ, giai đoạn 2, chỉ `manager` */
+export interface UpdateTreePositionInput {
+  mapPosition: XY;
+}

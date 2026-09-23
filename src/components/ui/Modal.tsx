@@ -23,7 +23,7 @@ export interface ModalProps {
  * Màn lớn → dialog rộng hơn để item dễ nhìn/thao tác; mobile vẫn là full-screen sheet.
  */
 const SIZE: Record<ModalSize, string> = {
-  sm: 'md:max-w-md lg:max-w-lg xl:max-w-xl',
+  sm: 'md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl',
   md: 'md:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl',
   lg: 'md:max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl',
   full: 'md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[90rem]',

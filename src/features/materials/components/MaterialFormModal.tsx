@@ -1,6 +1,6 @@
-import { useForm } from 'react-hook-form';
-import { Button, Checkbox, Input, Modal, Select, Textarea, useToast } from '@/components/ui';
-import { ErrorState } from '@/components/shared/ErrorState';
+import { Controller, useForm } from 'react-hook-form';
+import { Button, Checkbox, Input, Modal, NumberInput, Select, Textarea, useToast } from '@/components/ui';
+import { toAppError } from '@/services/http';
 import { MATERIAL_TYPE_CONFIG, MATERIAL_TYPES } from '@/constants/material-types';
 import { useCreateMaterial, useUpdateMaterial } from '../hooks/use-materials';
 import type { Material, MaterialInput, MaterialType } from '@/types';
@@ -25,7 +25,7 @@ export function MaterialFormModal({ open, material, defaultType, onClose }: Mate
   const updateMutation = useUpdateMaterial();
   const mutation = material ? updateMutation : createMutation;
 
-  const { register, handleSubmit, formState } = useForm<MaterialInput>({
+  const { register, control, handleSubmit, formState } = useForm<MaterialInput>({
     values: {
       code: material?.code ?? '',
       name: material?.name ?? '',
@@ -40,13 +40,16 @@ export function MaterialFormModal({ open, material, defaultType, onClose }: Mate
   async function onSubmit(values: MaterialInput) {
     const input: MaterialInput = {
       ...values,
-      unitPrice: Number.isFinite(values.unitPrice as number) ? values.unitPrice : null,
       notes: values.notes?.trim() || undefined,
     };
-    if (material) await updateMutation.mutateAsync({ id: material.id, input });
-    else await createMutation.mutateAsync(input);
-    toast.success(material ? 'Đã lưu vật tư' : 'Đã thêm vật tư mới');
-    onClose();
+    try {
+      if (material) await updateMutation.mutateAsync({ id: material.id, input });
+      else await createMutation.mutateAsync(input);
+      toast.success(material ? 'Đã lưu vật tư' : 'Đã thêm vật tư mới');
+      onClose();
+    } catch (error) {
+      toast.error(toAppError(error).message, 'Lưu vật tư thất bại');
+    }
   }
 
   return (
@@ -71,16 +74,6 @@ export function MaterialFormModal({ open, material, defaultType, onClose }: Mate
         </>
       }
     >
-      {mutation.isError && (
-        <div className="mb-4">
-          <ErrorState
-            error={mutation.error}
-            title="Lưu vật tư thất bại"
-            onRetry={() => mutation.reset()}
-          />
-        </div>
-      )}
-
       <form
         id="material-form"
         onSubmit={handleSubmit(onSubmit)}
@@ -107,12 +100,18 @@ export function MaterialFormModal({ open, material, defaultType, onClose }: Mate
           error={formState.errors.unit ? 'Nhập đơn vị tính' : undefined}
           {...register('unit', { required: true })}
         />
-        <Input
-          label="Đơn giá (đ)"
-          type="number"
-          min={0}
-          hint="Bỏ trống nếu chưa có giá."
-          {...register('unitPrice', { valueAsNumber: true, min: 0 })}
+        <Controller
+          control={control}
+          name="unitPrice"
+          render={({ field }) => (
+            <NumberInput
+              label="Đơn giá (đ)"
+              min={0}
+              hint="Bỏ trống nếu chưa có giá."
+              value={field.value}
+              onChange={field.onChange}
+            />
+          )}
         />
         <Textarea label="Ghi chú" rows={3} {...register('notes')} />
         <Checkbox

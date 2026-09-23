@@ -1,9 +1,5 @@
 import { http } from './http';
-import { clone, mockCall } from './mock/db';
-import { nextTreeCode, store } from './mock/store';
 import { FARM_ID } from './mock/farm.seed';
-import { computeHealthScore } from '@/utils/health-score';
-import { latLngToXY } from '@/utils/geo';
 import type {
   ActivityFilters,
   CreateTreeInput,
@@ -11,6 +7,8 @@ import type {
   Tree,
   TreeFilters,
   TreeLocation,
+  UpdateTreePositionInput,
+  UpdateTreeProfileInput,
   XY,
   UpdateInput,
 } from '@/types';
@@ -27,15 +25,17 @@ function matchesFilters(tree: Tree, filters: TreeFilters): boolean {
   return true;
 }
 
-/** GET /trees — item phẳng: bedName/moundNumber/mapPosition nằm ngoài location */
+/** GET/POST /trees — item phẳng: bedName/moundNumber/mapPosition nằm ngoài location */
 interface TreeApiItem extends Omit<Tree, 'farmId' | 'location' | 'gallery' | 'createdAt'> {
   location: Omit<TreeLocation, 'mapPoint' | 'bedName' | 'moundNumber'>;
   mapPosition?: XY | null;
   bedName?: string | null;
   moundNumber?: string | null;
+  /** Chỉ GET /trees/:code (chi tiết) trả — GET /trees (danh sách) không có, để nhẹ payload (04_API §1) */
+  gallery?: string[];
 }
 
-function toTree({ mapPosition, bedName, moundNumber, ...item }: TreeApiItem): Tree {
+function toTree({ mapPosition, bedName, moundNumber, gallery, ...item }: TreeApiItem): Tree {
   // Toạ độ lấy 100% từ API — không còn fallback về seed cục bộ
   return {
     ...item,
@@ -47,7 +47,7 @@ function toTree({ mapPosition, bedName, moundNumber, ...item }: TreeApiItem): Tr
       bedName: bedName ?? null,
       moundNumber: moundNumber ?? null,
     },
-    gallery: item.image ? [item.image] : [],
+    gallery: gallery ?? (item.image ? [item.image] : []),
     createdAt: item.plantedDate,
   };
 }
@@ -58,16 +58,6 @@ async function fetchTree(path: string, init?: RequestInit): Promise<Tree> {
   return toTree(response.item ?? response);
 }
 
-function historyOf(code: string): HistoryRecord[] {
-  return store.history
-    .filter((record) => record.treeCode === code)
-    .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
-}
-
-/**
- * Component KHÔNG BIẾT dữ liệu đến từ mock hay API.
- * Khi có BE: thay thân hàm bằng http<T>(...), giữ nguyên signature (05_FRONTEND §13).
- */
 export const treesService = {
   list: async (filters: TreeFilters = {}): Promise<Tree[]> => {
     const params = new URLSearchParams();
@@ -83,101 +73,55 @@ export const treesService = {
     return items.map(toTree).filter((tree) => matchesFilters(tree, filters));
   },
 
+  /** GET /trees/:code — chi tiết cây, kèm gallery (luồng quét QR — 04_API §1) */
   detail: (code: string): Promise<Tree> => fetchTree('/trees/' + code),
 
-  history: (code: string): Promise<HistoryRecord[]> => mockCall(() => clone(historyOf(code))),
+  /** GET /trees/:code/history — timeline một cây (04_API §1) */
+  history: async (code: string): Promise<HistoryRecord[]> => {
+    const { items } = await http<{ items: HistoryRecord[] }>('/trees/' + code + '/history');
+    return items;
+  },
 
-  activity: (filters: ActivityFilters = {}): Promise<HistoryRecord[]> =>
-    mockCall(() => {
-      const needle = filters.q?.trim().toLowerCase();
-      return clone(
-        store.history
-          .filter((record) => {
-            if (filters.type && record.type !== filters.type) return false;
-            if (!needle) return true;
-            const haystack = (
-              record.treeCode +
-              ' ' +
-              record.activity +
-              ' ' +
-              record.description +
-              ' ' +
-              record.performer
-            ).toLowerCase();
-            return haystack.includes(needle);
-          })
-          // Sort bằng timestamp ISO, không bằng id (05_FRONTEND §6.10)
-          .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)),
-      );
-    }),
+  /** GET /activity — nhật ký toàn vườn, sort occurredAt DESC (04_API §1, §6.10) */
+  activity: async (filters: ActivityFilters = {}): Promise<HistoryRecord[]> => {
+    const params = new URLSearchParams();
+    if (filters.q) params.set('q', filters.q);
+    if (filters.type) params.set('type', filters.type);
+    const query = params.toString();
+    const { items } = await http<{ items: HistoryRecord[] }>(
+      '/activity' + (query ? '?' + query : ''),
+    );
+    // Sort lại phía client bằng timestamp ISO — phòng khi API chưa sort đúng (05_FRONTEND §6.10)
+    return [...items].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
+  },
 
+  /** POST /trees — BE tự sinh `code`, client không gửi lên (09_DECISIONS D3) */
   create: (input: CreateTreeInput): Promise<Tree> =>
-    mockCall(() => {
-      const code = nextTreeCode();
-      const now = new Date().toISOString();
-      const coordinates = store.farm.benchmark
-        ? { lat: store.farm.benchmark.lat, lng: store.farm.benchmark.lng }
-        : null;
-      const tree: Tree = {
-        id: 'tree-' + code,
-        farmId: FARM_ID,
-        code,
-        variety: input.variety,
-        activated: true,
-        plantedDate: input.plantedDate,
-        location: {
-          block: input.block,
-          row: input.row,
-          position: input.position,
-          coordinates,
-          mapPoint: coordinates ? latLngToXY(coordinates, store.farm.mapLayers.anchors) : null,
-          bedName: null,
-          moundNumber: null,
-        },
-        canopyRadius: null,
-        status: input.status,
-        healthScore: computeHealthScore(input.status, 80),
-        soilMoisture: null,
-        leafCondition: null,
-        flowering: false,
-        floweringStage: null,
-        fruitCondition: null,
-        fruitCount: null,
-        heightMeters: null,
-        trunkDiameterCm: null,
-        image: null,
-        gallery: [],
-        notes: input.notes ?? null,
-        lastUpdated: now,
-        lastUpdatedBy: null,
-        createdAt: now,
-      };
-      store.trees.push(tree);
-      store.history.push({
-        id: code + '-h01',
-        treeId: tree.id,
-        treeCode: code,
-        farmId: FARM_ID,
-        occurredAt: now,
-        activity: 'Gắn thẻ QR & khởi tạo hồ sơ cây',
-        type: 'health_check',
-        status: input.status,
-        description: 'Khởi tạo hồ sơ cây và sinh mã QR.',
-        performer: 'Hệ thống',
-        dosage: null,
-        measurements: null,
-        images: [],
-        conditions: [],
-        actionTaken: 'none',
-        notes: null,
-      });
-      return clone(tree);
-    }),
+    fetchTree('/trees', { method: 'POST', body: JSON.stringify(input) }),
+
+  /** PATCH /trees/:code — sửa hồ sơ cây (giống/ngày trồng/vị trí lô...), KHÔNG phải ghi cập nhật tình trạng */
+  update: (code: string, input: UpdateTreeProfileInput): Promise<Tree> =>
+    fetchTree('/trees/' + code, { method: 'PATCH', body: JSON.stringify(input) }),
+
+  /** DELETE /trees/:code — chỉ `manager` (01_REQUIREMENTS §3.3) */
+  remove: (code: string): Promise<void> =>
+    http<void>('/trees/' + code, { method: 'DELETE' }),
+
+  /** PATCH /trees/:code/position — kéo-thả bản đồ, giai đoạn 2, chỉ `manager` (08_AI_RULES §10) */
+  updatePosition: (code: string, input: UpdateTreePositionInput): Promise<Tree> =>
+    fetchTree('/trees/' + code + '/position', { method: 'PATCH', body: JSON.stringify(input) }),
 
   /**
-   * PATCH /trees/:code — lưu cập nhật hồ sơ cây (API thật).
-   * healthScore/activity do backend tính; client chỉ gửi dữ liệu nhập.
+   * POST /trees/:code/history — ghi cập nhật tình trạng (04_API §2, §2a).
+   * BE tính healthScore/activity, ghi tree_history, snapshot vật tư, chống ghi trùng bằng clientRequestId.
+   * Response trả envelope riêng { record, tree } (khác {item}/tree phẳng của fetchTree) — cây đã
+   * cập nhật nằm ở `tree`, không phải `item` (nhầm chỗ này khiến toTree() crash dù BE đã lưu thành công).
    */
-  addUpdate: (code: string, input: UpdateInput): Promise<Tree> =>
-    fetchTree('/trees/' + code, { method: 'PATCH', body: JSON.stringify(input) }),
+  addUpdate: async (code: string, input: UpdateInput): Promise<Tree> => {
+    const { tree } = await http<{ record: HistoryRecord; tree: TreeApiItem }>(
+      '/trees/' + code + '/history',
+      { method: 'POST', body: JSON.stringify(input) },
+    );
+    return toTree(tree);
+  },
 };
