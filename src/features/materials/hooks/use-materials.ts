@@ -1,7 +1,15 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { materialsService } from '@/services/materials.service';
 import { materialKeys } from '@/services/query-keys';
 import type { MaterialInput } from '@/types';
+
+/** Danh mục vật tư đang dùng — nguồn cho picker ở form cập nhật (05_FRONTEND §6.6) */
+export function useActiveMaterials() {
+  return useQuery({
+    queryKey: materialKeys.list({ active: 'true' }),
+    queryFn: () => materialsService.list({ active: 'true' }),
+  });
+}
 
 function useInvalidate() {
   const queryClient = useQueryClient();

@@ -1,11 +1,20 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { Save, MapPin } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout/PageContainer';
-import { Button, Card, Checkbox, Input, Skeleton, StatusModal, useToast } from '@/components/ui';
+import {
+  Button,
+  Card,
+  Checkbox,
+  Input,
+  NumberInput,
+  Skeleton,
+  StatusModal,
+  useToast,
+} from '@/components/ui';
 import { StateBoundary } from '@/components/shared/StateBoundary';
-import { ErrorState } from '@/components/shared/ErrorState';
 import { DateText } from '@/components/shared/DateText';
+import { toAppError } from '@/services/http';
 import { useFarm, useUpdateBenchmark, useUpdateFarmSettings } from '@/hooks/tree-queries';
 import { parseCoordinate } from '@/utils/coords';
 import { ROUTES } from '@/constants/routes';
@@ -24,11 +33,11 @@ export default function SettingsPage() {
   const benchmarkMutation = useUpdateBenchmark();
   const [coordinateInput, setCoordinateInput] = useState('');
   const [coordinateError, setCoordinateError] = useState<string | null>(null);
-  const [saveResult, setSaveResult] = useState<'success' | 'error' | null>(null);
+  const [saveResult, setSaveResult] = useState<'success' | null>(null);
 
   const farm = farmQuery.data;
 
-  const { register, handleSubmit, formState } = useForm<SettingsForm>({
+  const { register, control, handleSubmit, formState } = useForm<SettingsForm>({
     values: farm
       ? {
           name: farm.name,
@@ -43,8 +52,8 @@ export default function SettingsPage() {
     try {
       await settingsMutation.mutateAsync(values);
       setSaveResult('success');
-    } catch {
-      setSaveResult('error');
+    } catch (error) {
+      toast.error(toAppError(error).message, 'Lưu cài đặt thất bại');
     }
   }
 
@@ -57,15 +66,19 @@ export default function SettingsPage() {
       return;
     }
     setCoordinateError(null);
-    await benchmarkMutation.mutateAsync({
-      lat: point.lat,
-      lng: point.lng,
-      code: farm?.benchmark.code ?? 'M0-TT',
-      name: farm?.benchmark.name ?? 'Mốc trắc địa trung tâm vườn',
-      source: 'manual',
-    });
-    setCoordinateInput('');
-    toast.success('Đã lưu mốc trắc địa trung tâm');
+    try {
+      await benchmarkMutation.mutateAsync({
+        lat: point.lat,
+        lng: point.lng,
+        code: farm?.benchmark.code ?? 'M0-TT',
+        name: farm?.benchmark.name ?? 'Mốc trắc địa trung tâm vườn',
+        source: 'manual',
+      });
+      setCoordinateInput('');
+      toast.success('Đã lưu mốc trắc địa trung tâm');
+    } catch (error) {
+      toast.error(toAppError(error).message, 'Lưu mốc thất bại');
+    }
   }
 
   return (
@@ -89,25 +102,24 @@ export default function SettingsPage() {
                 <Card.Title>Thông tin vườn</Card.Title>
               </Card.Header>
 
-              {settingsMutation.isError && (
-                <div className="mb-4">
-                  <ErrorState
-                    error={settingsMutation.error}
-                    title="Lưu cài đặt thất bại"
-                    onRetry={() => settingsMutation.reset()}
-                  />
-                </div>
-              )}
-
               <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                 <Input label="Tên vườn" required {...register('name', { required: true })} />
                 <Input label="Kỹ thuật viên trưởng ca" {...register('techLead')} />
-                <Input
-                  label="Tổng số cây vườn đang có"
-                  type="number"
-                  min={0}
-                  error={formState.errors.estimatedTreeCount ? 'Nhập số cây hợp lệ (≥ 0)' : undefined}
-                  {...register('estimatedTreeCount', { required: true, valueAsNumber: true, min: 0 })}
+                <Controller
+                  control={control}
+                  name="estimatedTreeCount"
+                  rules={{ required: true, min: 0 }}
+                  render={({ field }) => (
+                    <NumberInput
+                      label="Tổng số cây vườn đang có"
+                      min={0}
+                      error={
+                        formState.errors.estimatedTreeCount ? 'Nhập số cây hợp lệ (≥ 0)' : undefined
+                      }
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
                 />
                 <Checkbox
                   label="Bật đồng bộ ngoại tuyến"
@@ -188,13 +200,6 @@ export default function SettingsPage() {
                 >
                   Lưu mốc trắc địa
                 </Button>
-                {benchmarkMutation.isError && (
-                  <ErrorState
-                    error={benchmarkMutation.error}
-                    title="Lưu mốc thất bại"
-                    onRetry={() => benchmarkMutation.reset()}
-                  />
-                )}
                 <p className="text-caption text-text-muted">
                   Điểm neo ảnh nền: {farm.mapLayers.anchors.map((anchor) => anchor.label).join(' • ')}
                 </p>
@@ -206,18 +211,9 @@ export default function SettingsPage() {
 
       <StatusModal
         open={saveResult !== null}
-        tone={saveResult === 'error' ? 'error' : 'success'}
-        title={saveResult === 'error' ? 'Lưu cài đặt thất bại' : 'Đã lưu cài đặt vườn!'}
-        description={
-          saveResult === 'error'
-            ? (settingsMutation.error?.message ?? 'Thử lại sau ít phút hoặc báo quản trị viên.')
-            : 'Thông tin vườn đã cập nhật cho mọi tài khoản đang dùng.'
-        }
-        actionLabel={saveResult === 'error' ? 'Thử lại' : undefined}
-        onAction={() => {
-          setSaveResult(null);
-          void handleSubmit(onSubmit)();
-        }}
+        tone="success"
+        title="Đã lưu cài đặt vườn!"
+        description="Thông tin vườn đã cập nhật cho mọi tài khoản đang dùng."
         onClose={() => setSaveResult(null)}
       />
     </PageContainer>

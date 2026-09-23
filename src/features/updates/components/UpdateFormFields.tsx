@@ -4,9 +4,10 @@ import { Input, RadioGroup, Textarea } from '@/components/ui';
 import { PhotoUploader } from '@/components/shared/PhotoUploader';
 import { STATUS_CONFIG, TREE_STATUSES } from '@/constants/status-config';
 import { ACTIONS_TAKEN, ACTION_TAKEN_LABEL, MEASUREMENT_LIMITS } from '@/constants/activity-types';
-import type { PartTag } from '@/types';
+import type { MaterialUsageInput, PartTag } from '@/types';
 import type { UpdateFormValues } from '../schemas/update.schema';
 import { PartTagPicker } from './PartTagPicker';
+import { MaterialUsagePicker } from './MaterialUsagePicker';
 
 export interface UpdateFormFieldsProps {
   control: Control<UpdateFormValues>;
@@ -109,6 +110,18 @@ export function UpdateFormFields({ control, register, errors, disabled }: Update
             value={field.value}
             onChange={field.onChange}
             error={errors.actionTaken?.message}
+            disabled={disabled}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="materials"
+        render={({ field }) => (
+          <MaterialUsagePicker
+            value={field.value as MaterialUsageInput[]}
+            onChange={field.onChange}
             disabled={disabled}
           />
         )}

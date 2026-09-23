@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus } from 'lucide-react';
 import { Button, Input, Modal, Select, useToast } from '@/components/ui';
-import { ErrorState } from '@/components/shared/ErrorState';
+import { toAppError } from '@/services/http';
 import { useCreateTree } from '@/hooks/tree-queries';
 import { TREE_STATUSES, STATUS_CONFIG, VARIETIES } from '@/constants/status-config';
 import type { CreateTreeInput, TreeStatus, TreeVariety } from '@/types';
@@ -44,11 +44,17 @@ export function CreateTreeModal({ onClose }: { onClose: () => void }) {
       ...values,
       variety: values.variety as TreeVariety,
       status: values.status as TreeStatus,
+      // Form này luôn nhập đủ thông tin ngay — không tạo cây ảo (activated=false)
+      activated: true,
     };
-    const tree = await mutation.mutateAsync(input);
-    // Mã cây do backend sinh, FE không tự đánh số (04_API §1 — Trees)
-    toast.success('Đã tạo cây ' + tree.code);
-    onClose();
+    try {
+      const tree = await mutation.mutateAsync(input);
+      // Mã cây do backend sinh, FE không tự đánh số (04_API §1 — Trees)
+      toast.success('Đã tạo cây ' + tree.code);
+      onClose();
+    } catch (error) {
+      toast.error(toAppError(error).message, 'Tạo cây thất bại');
+    }
   }
 
   return (
@@ -74,16 +80,6 @@ export function CreateTreeModal({ onClose }: { onClose: () => void }) {
         </>
       }
     >
-      {mutation.isError && (
-        <div className="mb-4">
-          <ErrorState
-            error={mutation.error}
-            title="Tạo cây thất bại"
-            onRetry={() => mutation.reset()}
-          />
-        </div>
-      )}
-
       <form
         id="create-tree-form"
         onSubmit={handleSubmit(onSubmit)}

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Package, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout/PageContainer';
 import { Badge, Button, Input, Select, Skeleton, Table, useToast } from '@/components/ui';
-import type { Column } from '@/components/ui';
+import type { Column, SortState } from '@/components/ui';
 import { StateBoundary } from '@/components/shared/StateBoundary';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -40,6 +40,7 @@ export default function MaterialListPage() {
   /** null = chưa mở; { material: null } = thêm mới */
   const [editing, setEditing] = useState<{ material: Material | null } | null>(null);
   const [deleting, setDeleting] = useState<Material | null>(null);
+  const [sort, setSort] = useState<SortState>({ key: 'code', direction: 'asc' });
 
   const q = searchParams.get('q') ?? '';
   const type = (searchParams.get('type') ?? '') as MaterialType | '';
@@ -60,6 +61,22 @@ export default function MaterialListPage() {
   // BE cắt hẳn unitPrice với worker/viewer (D9) → không có giá thì bỏ luôn cột
   const showPrice = materials.some((item) => item.unitPrice !== undefined);
 
+  const sortedMaterials = useMemo(() => {
+    const factor = sort.direction === 'asc' ? 1 : -1;
+    return [...materials].sort((a, b) => {
+      const key = sort.key as keyof Material;
+      const aValue = a[key];
+      const bValue = b[key];
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return -1 * factor;
+      if (bValue == null) return 1 * factor;
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return (aValue - bValue) * factor;
+      }
+      return String(aValue).localeCompare(String(bValue), 'vi') * factor;
+    });
+  }, [materials, sort]);
+
   function setParam(key: string, value: string) {
     setSearchParams(
       (current) => {
@@ -77,6 +94,7 @@ export default function MaterialListPage() {
       key: 'code',
       header: 'Mã',
       primary: true,
+      sortable: true,
       render: (row) => (
         <span className="font-mono font-bold text-text-primary">{row.code}</span>
       ),
@@ -84,6 +102,7 @@ export default function MaterialListPage() {
     {
       key: 'name',
       header: 'Tên vật tư',
+      sortable: true,
       render: (row) => (
         <div>
           <p className="font-semibold text-text-primary">{row.name}</p>
@@ -94,19 +113,21 @@ export default function MaterialListPage() {
     {
       key: 'type',
       header: 'Nhóm',
+      sortable: true,
       render: (row) => (
         <Badge variant={MATERIAL_TYPE_CONFIG[row.type].variant}>
           {MATERIAL_TYPE_CONFIG[row.type].label}
         </Badge>
       ),
     },
-    { key: 'unit', header: 'Đơn vị', render: (row) => formatText(row.unit) },
+    { key: 'unit', header: 'Đơn vị', sortable: true, render: (row) => formatText(row.unit) },
     ...(showPrice
       ? [
           {
             key: 'unitPrice',
             header: 'Đơn giá',
             className: 'text-right tabular-nums',
+            sortable: true,
             render: (row: Material) => formatNumber(row.unitPrice, 'đ'),
           },
         ]
@@ -114,6 +135,7 @@ export default function MaterialListPage() {
     {
       key: 'active',
       header: 'Trạng thái',
+      sortable: true,
       render: (row) => (
         <Badge variant={row.active ? 'success' : 'neutral'}>
           {row.active ? 'Đang dùng' : 'Đã ngừng'}
@@ -123,6 +145,7 @@ export default function MaterialListPage() {
     {
       key: 'updatedAt',
       header: 'Cập nhật',
+      sortable: true,
       render: (row) => <DateText value={row.updatedAt} variant="date" />,
     },
     ...(canEdit
@@ -236,8 +259,10 @@ export default function MaterialListPage() {
         <Table
           caption="Danh mục vật tư của vườn"
           columns={columns}
-          data={materials}
+          data={sortedMaterials}
           rowKey={(row) => row.id}
+          sort={sort}
+          onSortChange={setSort}
         />
       </StateBoundary>
 
