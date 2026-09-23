@@ -4,6 +4,7 @@ export type MaterialType =
   | 'fungicide'
   | 'herbicide'
   | 'stimulant'
+  | 'variety'
   | 'other';
 
 /** GET /materials — `unitPrice` bị BE cắt hẳn với worker/viewer (04_API D9) */

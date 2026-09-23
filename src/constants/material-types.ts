@@ -7,6 +7,7 @@ export const MATERIAL_TYPE_CONFIG: Record<MaterialType, { label: string; variant
   fungicide: { label: 'Thuốc trừ nấm', variant: 'warning' },
   herbicide: { label: 'Thuốc trừ cỏ', variant: 'info' },
   stimulant: { label: 'Chất kích thích', variant: 'primary' },
+  variety: { label: 'Cây giống', variant: 'success' },
   other: { label: 'Khác', variant: 'neutral' },
 };
 

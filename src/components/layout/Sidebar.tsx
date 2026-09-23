@@ -16,13 +16,8 @@ export interface SidebarProps {
  * Mục có sub-menu: bấm để đóng/mở, không điều hướng riêng.
  * ponytail: mục con so khớp cả query string vì NavLink chỉ xét pathname.
  */
-function isGroupActive(item: NavItem, current: string): boolean {
-  if (current.startsWith(item.to)) return true;
-  return Boolean(item.children?.some((child) => current.startsWith(child.to.split('?')[0])));
-}
-
 function NavGroup({ item, current, onNavigate }: { item: NavItem; current: string; onNavigate?: () => void }) {
-  const [open, setOpen] = useState(() => isGroupActive(item, current));
+  const [open, setOpen] = useState(() => current.startsWith(item.to));
 
   const rowClass =
     'flex min-h-11 w-full items-center gap-3 rounded-md px-3 text-body-sm font-semibold transition-colors';
@@ -51,7 +46,7 @@ function NavGroup({ item, current, onNavigate }: { item: NavItem; current: strin
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        className={cn(rowClass, toneClass(isGroupActive(item, current)))}
+        className={cn(rowClass, toneClass(current.startsWith(item.to)))}
       >
         <item.icon aria-hidden className="size-5 shrink-0" />
         <span className="flex-1 text-left">{item.label}</span>
