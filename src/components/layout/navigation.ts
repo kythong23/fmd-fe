@@ -5,6 +5,7 @@ import {
   QrCode,
   ScrollText,
   Package,
+  BarChart3,
   Settings,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -38,5 +39,6 @@ export const NAV_ITEMS: NavItem[] = [
       label: MATERIAL_TYPE_CONFIG[type].label,
     })),
   },
+  { to: ROUTES.reports, label: 'Báo cáo', icon: BarChart3, permission: 'report:view' },
   { to: ROUTES.settings, label: 'Cài đặt vườn', icon: Settings, permission: 'farm:settings' },
 ];

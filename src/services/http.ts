@@ -116,6 +116,10 @@ export async function http<T>(path: string, init: RequestInit = {}, canRetry = t
     }
 
     if (response.status === 204) return undefined as T;
+    // Endpoint trả file (vd /reports/summary.csv) → đọc text, không parse JSON
+    if (response.headers.get('Content-Type')?.startsWith('text/')) {
+      return (await response.text()) as T;
+    }
     return (await response.json()) as T;
   } catch (error) {
     throw toAppError(error);
