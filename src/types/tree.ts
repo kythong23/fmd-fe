@@ -92,6 +92,8 @@ export interface UpdateTreeProfileInput {
   bedName?: string;
   moundNumber?: string;
   notes?: string;
+  /** Ảnh đại diện (URL từ POST /uploads) — khác ảnh tình trạng nằm trong từng bản ghi lịch sử */
+  image?: string;
 }
 
 /** Payload PATCH /trees/:code/position — kéo-thả bản đồ, giai đoạn 2, chỉ `manager` */

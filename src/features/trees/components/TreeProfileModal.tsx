@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Save } from 'lucide-react';
@@ -7,6 +7,7 @@ import { toAppError } from '@/services/http';
 import { useUpdateTreeProfile } from '@/hooks/tree-queries';
 import { VARIETIES } from '@/constants/status-config';
 import type { Tree, TreeVariety, UpdateTreeProfileInput } from '@/types';
+import { TreeAvatarField } from './TreeAvatarField';
 
 const schema = z.object({
   variety: z.enum(VARIETIES, { message: 'Chọn giống cây' }),
@@ -17,6 +18,7 @@ const schema = z.object({
   bedName: z.string().trim().max(100, 'Tối đa 100 ký tự'),
   moundNumber: z.string().trim().max(100, 'Tối đa 100 ký tự'),
   notes: z.string().trim().max(2000, 'Tối đa 2000 ký tự'),
+  image: z.string(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -37,6 +39,7 @@ export function TreeProfileModal({ tree, onClose }: TreeProfileModalProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
@@ -51,6 +54,7 @@ export function TreeProfileModal({ tree, onClose }: TreeProfileModalProps) {
       bedName: tree.location.bedName ?? '',
       moundNumber: tree.location.moundNumber ?? '',
       notes: tree.notes ?? '',
+      image: tree.image ?? '',
     },
   });
 
@@ -65,6 +69,7 @@ export function TreeProfileModal({ tree, onClose }: TreeProfileModalProps) {
       bedName: values.bedName || undefined,
       moundNumber: values.moundNumber || undefined,
       notes: values.notes || undefined,
+      image: values.image || undefined,
     };
     try {
       await mutation.mutateAsync(input);
@@ -113,6 +118,13 @@ export function TreeProfileModal({ tree, onClose }: TreeProfileModalProps) {
         className="flex flex-col gap-4"
         noValidate
       >
+        <Controller
+          control={control}
+          name="image"
+          render={({ field }) => (
+            <TreeAvatarField value={field.value} onChange={field.onChange} disabled={isSubmitting} />
+          )}
+        />
         <Select
           label="Giống"
           required

@@ -94,7 +94,8 @@ export async function http<T>(path: string, init: RequestInit = {}, canRetry = t
       ...init,
       signal: controller.signal,
       headers: {
-        'Content-Type': 'application/json',
+        // FormData (upload ảnh): để browser tự đặt multipart kèm boundary
+        ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
         ...(authToken ? { Authorization: 'Bearer ' + authToken } : {}),
         ...init.headers,
       },

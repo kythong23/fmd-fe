@@ -10,9 +10,10 @@ import { useUi } from '@/stores/ui-context';
 import { toAppError } from '@/services/http';
 import { ROUTES } from '@/constants/routes';
 import { TreePassportCard } from '../components/TreePassportCard';
-import { TreeGallery } from '../components/TreeGallery';
+import { TreeAvatar } from '../components/TreeAvatar';
 import { TreeNotFound } from '../components/TreeNotFound';
 import { TreeProfileModal } from '../components/TreeProfileModal';
+import { TreeStatusPhotos } from '../components/TreeStatusPhotos';
 
 /** Màn hình lõi — đích của mọi mã QR (05_FRONTEND §6.4) */
 export default function TreePassportPage() {
@@ -88,7 +89,7 @@ export default function TreePassportPage() {
 
             <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
               <div className="flex flex-col gap-3">
-                <TreeGallery code={tree.code} image={tree.image} gallery={tree.gallery} />
+                <TreeAvatar code={tree.code} image={tree.image} />
                 <div className="flex flex-col gap-2">
                   {canWrite && activated && (
                     <Button
@@ -119,7 +120,10 @@ export default function TreePassportPage() {
                 </div>
               </div>
 
-              <TreePassportCard tree={tree} />
+              <div className="flex flex-col gap-4">
+                <TreePassportCard tree={tree} />
+                {activated && <TreeStatusPhotos code={tree.code} />}
+              </div>
             </div>
           </div>
         )}
