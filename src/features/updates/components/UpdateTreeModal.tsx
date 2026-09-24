@@ -5,6 +5,7 @@ import { Save } from 'lucide-react';
 import { Button, Modal, useToast } from '@/components/ui';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toAppError } from '@/services/http';
+import { uuid } from '@/utils/uuid';
 import { useAuth } from '@/stores/auth-context';
 import { useTree } from '@/hooks/tree-queries';
 import { useAddTreeUpdate } from '../hooks/use-add-update';
@@ -32,7 +33,7 @@ export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
   const mutation = useAddTreeUpdate(code);
   const [confirmClose, setConfirmClose] = useState(false);
   // Sinh 1 lần mỗi lần mở form: bấm Lưu nhiều lúc mất sóng vẫn chỉ ghi 1 bản (04_API §2)
-  const [clientRequestId] = useState(() => crypto.randomUUID());
+  const [clientRequestId] = useState(uuid);
 
   const {
     register,
