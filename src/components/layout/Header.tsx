@@ -48,7 +48,7 @@ export function Header() {
 
         <Link
           to={ROUTES.dashboard}
-          className="flex items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          className="flex items-center gap-2.5 rounded-md lg:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           <img 
             src="/logo-icon.png" 

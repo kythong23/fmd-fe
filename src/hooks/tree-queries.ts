@@ -8,6 +8,7 @@ import type {
   CreateTreeInput,
   FarmSettingsInput,
   TreeFilters,
+  UpdateTreeProfileInput,
 } from '@/types';
 
 /**
@@ -54,6 +55,18 @@ export function useCreateTree() {
   return useMutation({
     mutationFn: (input: CreateTreeInput) => treesService.create(input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: treeKeys.all }),
+  });
+}
+
+/** PATCH /trees/:code — sửa hồ sơ; lần đầu PATCH cây ảo thì BE kích hoạt luôn */
+export function useUpdateTreeProfile(code: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateTreeProfileInput) => treesService.update(code, input),
+    onSuccess: (tree) => {
+      queryClient.setQueryData(treeKeys.detail(code), tree);
+      return queryClient.invalidateQueries({ queryKey: treeKeys.all });
+    },
   });
 }
 

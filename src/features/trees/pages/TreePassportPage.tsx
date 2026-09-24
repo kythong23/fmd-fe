@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { History, PencilLine, QrCode } from 'lucide-react';
+import { ClipboardPen, History, Info, PencilLine, QrCode } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout/PageContainer';
 import { Button, Skeleton } from '@/components/ui';
 import { StateBoundary } from '@/components/shared/StateBoundary';
@@ -9,8 +10,10 @@ import { useUi } from '@/stores/ui-context';
 import { toAppError } from '@/services/http';
 import { ROUTES } from '@/constants/routes';
 import { TreePassportCard } from '../components/TreePassportCard';
-import { TreeGallery } from '../components/TreeGallery';
+import { TreeAvatar } from '../components/TreeAvatar';
 import { TreeNotFound } from '../components/TreeNotFound';
+import { TreeProfileModal } from '../components/TreeProfileModal';
+import { TreeStatusPhotos } from '../components/TreeStatusPhotos';
 
 /** Màn hình lõi — đích của mọi mã QR (05_FRONTEND §6.4) */
 export default function TreePassportPage() {
@@ -19,17 +22,26 @@ export default function TreePassportPage() {
   const { can } = useAuth();
   const { openUpdate, openScanner } = useUi();
   const query = useTree(code);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   if (query.isError && toAppError(query.error).code === 'NOT_FOUND') {
     return <TreeNotFound code={code} onRescan={openScanner} />;
   }
 
-  const canUpdate = can('tree:update');
-  const updateButton = canUpdate ? (
+  const tree = query.data;
+  const canWrite = can('tree:update');
+  // Cây ảo (đã in QR, chưa ai nhập thông tin) phải nhập hồ sơ trước — chưa được ghi tình trạng
+  const activated = tree?.activated ?? false;
+
+  const primaryAction = !tree || !canWrite ? null : activated ? (
     <Button onClick={() => openUpdate(code)} leftIcon={<PencilLine className="size-5" />}>
       Cập nhật tình trạng
     </Button>
-  ) : null;
+  ) : (
+    <Button onClick={() => setProfileOpen(true)} leftIcon={<ClipboardPen className="size-5" />}>
+      Nhập thông tin cây
+    </Button>
+  );
 
   return (
     <PageContainer className="pb-24 sm:pb-6">
@@ -41,7 +53,7 @@ export default function TreePassportPage() {
           { label: 'Danh sách cây', to: ROUTES.trees },
           { label: code },
         ]}
-        action={updateButton}
+        action={primaryAction}
       />
 
       <StateBoundary
@@ -58,55 +70,96 @@ export default function TreePassportPage() {
           </div>
         }
       >
-        {query.data && (
-          <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
-            <div className="flex flex-col gap-3">
-              <TreeGallery
-                code={query.data.code}
-                image={query.data.image}
-                gallery={query.data.gallery}
-              />
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  onClick={() => navigate(ROUTES.treeHistory(code))}
-                  leftIcon={<History className="size-5" />}
-                >
-                  Xem lịch sử
-                </Button>
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  onClick={() => navigate(ROUTES.qr + '?q=' + code)}
-                  leftIcon={<QrCode className="size-5" />}
-                >
-                  Xem mã QR
-                </Button>
+        {tree && (
+          <div className="flex flex-col gap-4">
+            {!activated && (
+              <div
+                role="status"
+                className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning-subtle p-4 text-body-sm text-text-primary"
+              >
+                <Info aria-hidden className="mt-0.5 size-5 shrink-0 text-warning" />
+                <p>
+                  <span className="font-semibold">Cây chưa được kích hoạt.</span>{' '}
+                  {canWrite
+                    ? 'Nhập thông tin cây (giống, ngày trồng, vị trí) để kích hoạt, sau đó mới ghi được cập nhật tình trạng.'
+                    : 'Cây chưa có thông tin nên chưa thể ghi cập nhật tình trạng.'}
+                </p>
+              </div>
+            )}
+
+            <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
+              <div className="flex flex-col gap-3">
+                <TreeAvatar code={tree.code} image={tree.image} />
+                <div className="flex flex-col gap-2">
+                  {canWrite && activated && (
+                    <Button
+                      variant="secondary"
+                      fullWidth
+                      onClick={() => setProfileOpen(true)}
+                      leftIcon={<ClipboardPen className="size-5" />}
+                    >
+                      Sửa hồ sơ cây
+                    </Button>
+                  )}
+                  <Button
+                    variant="secondary"
+                    fullWidth
+                    onClick={() => navigate(ROUTES.treeHistory(code))}
+                    leftIcon={<History className="size-5" />}
+                  >
+                    Xem lịch sử
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    fullWidth
+                    onClick={() => navigate(ROUTES.qr + '?q=' + code)}
+                    leftIcon={<QrCode className="size-5" />}
+                  >
+                    Xem mã QR
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <TreePassportCard tree={tree} />
+                {activated && <TreeStatusPhotos code={tree.code} />}
               </div>
             </div>
-
-            <TreePassportCard tree={query.data} />
           </div>
         )}
       </StateBoundary>
 
       {/* Primary action dính đáy màn hình trên mobile — một tay, ngoài nắng (05_FRONTEND §9) */}
-      {canUpdate && (
+      {primaryAction && (
         <div
           data-print-hide
           style={{ zIndex: 'var(--z-sticky)' }}
           className="fixed inset-x-0 bottom-14 border-t border-border bg-surface p-3 sm:hidden"
         >
-          <Button
-            fullWidth
-            size="lg"
-            onClick={() => openUpdate(code)}
-            leftIcon={<PencilLine className="size-5" />}
-          >
-            Cập nhật tình trạng
-          </Button>
+          {activated ? (
+            <Button
+              fullWidth
+              size="lg"
+              onClick={() => openUpdate(code)}
+              leftIcon={<PencilLine className="size-5" />}
+            >
+              Cập nhật tình trạng
+            </Button>
+          ) : (
+            <Button
+              fullWidth
+              size="lg"
+              onClick={() => setProfileOpen(true)}
+              leftIcon={<ClipboardPen className="size-5" />}
+            >
+              Nhập thông tin cây
+            </Button>
+          )}
         </div>
+      )}
+
+      {profileOpen && tree && (
+        <TreeProfileModal tree={tree} onClose={() => setProfileOpen(false)} />
       )}
     </PageContainer>
   );

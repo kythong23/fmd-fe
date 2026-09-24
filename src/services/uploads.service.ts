@@ -1,35 +1,31 @@
-import { appError } from './http';
-import { delay } from './mock/db';
+import { appError, http } from './http';
 
-const MAX_BYTES = 8 * 1024 * 1024;
-const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+// Khớp BE (routes/uploads.ts): chỉ JPG/PNG/WEBP, tối đa 10MB — BE kiểm tra magic bytes lần nữa
+const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
 
 /**
- * Upload ảnh trả URL bền. Mock hiện lưu data URL để ảnh sống qua reload —
- * prototype dùng URL.createObjectURL nên mất ảnh khi F5 (ref §4.4).
- * Khi có BE: đổi thân hàm sang POST /uploads, giữ nguyên signature.
+ * POST /uploads (multipart, field `files`) → URL bền do BE trả về.
+ * Không gửi ảnh dạng data URL trong JSON: BE giới hạn body JSON 1MB, ảnh điện thoại vượt ngay.
  */
 export const uploadsService = {
   async upload(file: File): Promise<string> {
     if (!ALLOWED.includes(file.type)) {
       throw appError('VALIDATION', {
-        message: 'Chỉ nhận ảnh JPG, PNG, WEBP hoặc HEIC.',
+        message: 'Chỉ nhận ảnh JPG, PNG hoặc WEBP.',
         retryable: false,
       });
     }
     if (file.size > MAX_BYTES) {
       throw appError('VALIDATION', {
-        message: 'Ảnh vượt quá 8MB. Chụp lại ở độ phân giải thấp hơn giúp bạn.',
+        message: 'Ảnh vượt quá 10MB. Chụp lại ở độ phân giải thấp hơn giúp bạn.',
         retryable: false,
       });
     }
 
-    await delay(400, 1200);
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(appError('UNKNOWN', { message: 'Không đọc được file ảnh.' }));
-      reader.readAsDataURL(file);
-    });
+    const body = new FormData();
+    body.append('files', file);
+    const { urls } = await http<{ urls: string[] }>('/uploads', { method: 'POST', body });
+    return urls[0];
   },
 };

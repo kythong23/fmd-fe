@@ -10,9 +10,16 @@ export interface PhotoUploaderProps {
   onChange: (urls: string[]) => void;
   max?: number;
   disabled?: boolean;
+  label?: string;
 }
 
-export function PhotoUploader({ value, onChange, max = 4, disabled }: PhotoUploaderProps) {
+export function PhotoUploader({
+  value,
+  onChange,
+  max = 4,
+  disabled,
+  label = 'Ảnh minh chứng',
+}: PhotoUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +46,7 @@ export function PhotoUploader({ value, onChange, max = 4, disabled }: PhotoUploa
   return (
     <div className="flex flex-col gap-2">
       <span className="text-label font-semibold text-text-primary">
-        Ảnh minh chứng
+        {label}
         <span className="ml-1 font-normal text-text-muted">
           (tùy chọn, tối đa {max} ảnh)
         </span>
@@ -53,7 +60,7 @@ export function PhotoUploader({ value, onChange, max = 4, disabled }: PhotoUploa
           >
             <img
               src={url}
-              alt={'Ảnh minh chứng ' + (index + 1)}
+              alt={label + ' ' + (index + 1)}
               width={96}
               height={96}
               loading="lazy"
@@ -99,7 +106,7 @@ export function PhotoUploader({ value, onChange, max = 4, disabled }: PhotoUploa
         capture="environment"
         multiple
         className="sr-only"
-        aria-label="Chọn ảnh minh chứng"
+        aria-label={'Chọn ' + label.toLowerCase()}
         onChange={(event) => handleFiles(event.target.files)}
       />
 

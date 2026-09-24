@@ -74,7 +74,12 @@ export function UpdateFormFields({ control, register, errors, disabled }: Update
         control={control}
         name="images"
         render={({ field }) => (
-          <PhotoUploader value={field.value} onChange={field.onChange} disabled={disabled} />
+          <PhotoUploader
+            label="Ảnh tình trạng hiện tại"
+            value={field.value}
+            onChange={field.onChange}
+            disabled={disabled}
+          />
         )}
       />
 

@@ -5,6 +5,7 @@ import { Save } from 'lucide-react';
 import { Button, Modal, useToast } from '@/components/ui';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toAppError } from '@/services/http';
+import { uuid } from '@/utils/uuid';
 import { useAuth } from '@/stores/auth-context';
 import { useTree } from '@/hooks/tree-queries';
 import { useAddTreeUpdate } from '../hooks/use-add-update';
@@ -26,13 +27,14 @@ function toNumber(value: string | number | undefined): number | undefined {
 
 export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
   const { user } = useAuth();
+  const tree = useTree(code).data;
   // Đặt sẵn trạng thái hiện tại từ cache của passport; chưa có cache thì mặc định healthy
-  const currentStatus = useTree(code).data?.status ?? 'healthy';
+  const currentStatus = tree?.status ?? 'healthy';
   const toast = useToast();
   const mutation = useAddTreeUpdate(code);
   const [confirmClose, setConfirmClose] = useState(false);
   // Sinh 1 lần mỗi lần mở form: bấm Lưu nhiều lúc mất sóng vẫn chỉ ghi 1 bản (04_API §2)
-  const [clientRequestId] = useState(() => crypto.randomUUID());
+  const [clientRequestId] = useState(uuid);
 
   const {
     register,
@@ -63,6 +65,11 @@ export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
   }
 
   async function onSubmit(values: UpdateFormValues) {
+    // Chốt chặn cuối: nút mở form đã ẩn với cây chưa kích hoạt, BE hiện chưa chặn việc này
+    if (tree && !tree.activated) {
+      toast.error('Nhập thông tin cây ở trang hồ sơ cây trước.', 'Cây chưa được kích hoạt');
+      return;
+    }
     const measurements: Measurements = {
       height: toNumber(values.height),
       trunkDiameter: toNumber(values.trunkDiameter),

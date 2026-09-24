@@ -30,7 +30,7 @@ export function TreePassportCard({ tree }: { tree: Tree }) {
               {tree.code}
             </p>
             <p className="mt-1 text-body text-text-secondary">
-              {tree.variety} — {age === null ? EMPTY_VALUE : age + ' năm tuổi'}
+              {formatText(tree.variety)} — {age === null ? EMPTY_VALUE : age + ' năm tuổi'}
             </p>
             <div className="mt-3">
               <StatusBadge status={tree.status} size="md" />
@@ -47,13 +47,19 @@ export function TreePassportCard({ tree }: { tree: Tree }) {
           <Card.Title>Thông tin cây</Card.Title>
         </Card.Header>
         <dl className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-          <Row label="Giống" value={tree.variety} />
+          <Row label="Giống" value={formatText(tree.variety)} />
           <Row
             label="Ngày trồng"
             value={<DateText value={tree.plantedDate} variant="date" />}
           />
-          <Row label="Lô" value={'Lô ' + tree.location.block} />
-          <Row label="Hàng / vị trí" value={tree.location.row + ' / ' + tree.location.position} />
+          <Row
+            label="Lô"
+            value={tree.location.block ? 'Lô ' + tree.location.block : EMPTY_VALUE}
+          />
+          <Row
+            label="Hàng / vị trí"
+            value={formatText(tree.location.row) + ' / ' + formatText(tree.location.position)}
+          />
           <Row label="Liếp" value={formatText(tree.location.bedName)} />
           <Row label="Mô" value={formatText(tree.location.moundNumber)} />
           <Row

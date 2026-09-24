@@ -79,8 +79,22 @@ export interface CreateTreeInput {
   notes?: string;
 }
 
-/** Payload PATCH /trees/:code — sửa hồ sơ cây, không đổi tình trạng/lịch sử (04_API §1) */
-export type UpdateTreeProfileInput = Partial<Omit<CreateTreeInput, 'status'>>;
+/**
+ * Payload PATCH /trees/:code — sửa hồ sơ cây, không đổi tình trạng/lịch sử (04_API §1).
+ * Không có `activated`: BE tự kích hoạt cây ảo ở lần PATCH đầu tiên.
+ */
+export interface UpdateTreeProfileInput {
+  variety?: TreeVariety;
+  plantedDate?: string;
+  block?: string;
+  row?: string;
+  position?: string;
+  bedName?: string;
+  moundNumber?: string;
+  notes?: string;
+  /** Ảnh đại diện (URL từ POST /uploads) — khác ảnh tình trạng nằm trong từng bản ghi lịch sử */
+  image?: string;
+}
 
 /** Payload PATCH /trees/:code/position — kéo-thả bản đồ, giai đoạn 2, chỉ `manager` */
 export interface UpdateTreePositionInput {
