@@ -16,7 +16,9 @@ export interface MaterialUsagePickerProps {
  * BE tự tra và snapshot lại khi lưu (04_API §2a).
  */
 export function MaterialUsagePicker({ value, onChange, disabled }: MaterialUsagePickerProps) {
-  const { data: materials = [], isLoading } = useActiveMaterials();
+  const { data: allMaterials = [], isLoading } = useActiveMaterials();
+  // Cây giống nằm chung danh mục vật tư nhưng không phải thứ "đã dùng" khi chăm sóc cây
+  const materials = allMaterials.filter((item) => item.type !== 'variety');
   // BE cắt hẳn unitPrice với worker/viewer — cùng cách kiểm tra như /materials (D9)
   const showPrice = materials.some((item) => item.unitPrice !== undefined);
 
