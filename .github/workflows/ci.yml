@@ -1,0 +1,24 @@
+# CI cho FE. Deploy do Cloudflare Pages tự làm qua Git integration (D13):
+# push main → production, mở PR → preview URL. Workflow này chỉ chặn code hỏng trước khi merge.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+        env:
+          VITE_API_URL: https://api.example.invalid/api/v1
+          VITE_PUBLIC_URL: https://app.example.invalid
