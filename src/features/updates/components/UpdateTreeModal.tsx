@@ -27,8 +27,9 @@ function toNumber(value: string | number | undefined): number | undefined {
 
 export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
   const { user } = useAuth();
+  const tree = useTree(code).data;
   // Đặt sẵn trạng thái hiện tại từ cache của passport; chưa có cache thì mặc định healthy
-  const currentStatus = useTree(code).data?.status ?? 'healthy';
+  const currentStatus = tree?.status ?? 'healthy';
   const toast = useToast();
   const mutation = useAddTreeUpdate(code);
   const [confirmClose, setConfirmClose] = useState(false);
@@ -64,6 +65,11 @@ export function UpdateTreeModal({ code, onClose }: UpdateTreeModalProps) {
   }
 
   async function onSubmit(values: UpdateFormValues) {
+    // Chốt chặn cuối: nút mở form đã ẩn với cây chưa kích hoạt, BE hiện chưa chặn việc này
+    if (tree && !tree.activated) {
+      toast.error('Nhập thông tin cây ở trang hồ sơ cây trước.', 'Cây chưa được kích hoạt');
+      return;
+    }
     const measurements: Measurements = {
       height: toNumber(values.height),
       trunkDiameter: toNumber(values.trunkDiameter),

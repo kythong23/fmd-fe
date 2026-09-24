@@ -35,7 +35,8 @@ export default function TreeHistoryPage() {
   const query = useTreeHistory(code);
   const { can } = useAuth();
   const { openUpdate } = useUi();
-  const canUpdate = can('tree:update');
+  // Cây chưa kích hoạt phải nhập hồ sơ trước (ở trang hồ sơ cây) mới được ghi tình trạng
+  const canUpdate = can('tree:update') && treeQuery.data?.activated === true;
 
   const performerOptions = useMemo(() => {
     const names = new Set((query.data ?? []).map((record) => record.performer));
