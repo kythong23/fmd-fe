@@ -4,3 +4,4 @@ export * from './history';
 export * from './material';
 export * from './tree';
 export * from './user';
+export * from './report';

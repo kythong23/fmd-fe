@@ -19,11 +19,12 @@ const lanIp = () => {
   return ips.find((a) => a.startsWith('192.168.')) || ips[0];
 };
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, __dirname, '');
   // ponytail: chốt IP lúc start server; đổi mạng thì restart. Khi có domain -> set VITE_PUBLIC_URL trong .env
+  // Build production không fallback IP LAN -> qr.ts dùng window.location.origin (domain deploy)
   process.env.VITE_PUBLIC_URL =
-    env.VITE_PUBLIC_URL || (lanIp() ? `http://${lanIp()}:${PORT}` : '');
+    env.VITE_PUBLIC_URL || (command === 'serve' && lanIp() ? `http://${lanIp()}:${PORT}` : '');
 
   return {
     plugins: [react(), tailwindcss()],

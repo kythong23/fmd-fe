@@ -15,6 +15,7 @@ const MapPage = lazy(() => import('@/features/map/pages/MapPage'));
 const QrManagementPage = lazy(() => import('@/features/qr/pages/QrManagementPage'));
 const ActivityPage = lazy(() => import('@/features/activity/pages/ActivityPage'));
 const MaterialListPage = lazy(() => import('@/features/materials/pages/MaterialListPage'));
+const ReportPage = lazy(() => import('@/features/reports/pages/ReportPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
 const NotFoundPage = lazy(() => import('@/features/auth/pages/NotFoundPage'));
 const DevUiPage = lazy(() => import('@/features/dev/DevUiPage'));
@@ -46,6 +47,13 @@ export const router = createBrowserRouter([
     element: <RequireAuth permission="qr:manage" />,
     children: [
       { element: <AppLayout />, children: [{ path: ROUTES.qr, element: <QrManagementPage /> }] },
+    ],
+  },
+  {
+    // Báo cáo chi phí chỉ manager (09_DECISIONS D9)
+    element: <RequireAuth permission="report:view" />,
+    children: [
+      { element: <AppLayout />, children: [{ path: ROUTES.reports, element: <ReportPage /> }] },
     ],
   },
   {

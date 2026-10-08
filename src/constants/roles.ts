@@ -7,7 +7,8 @@ export type Permission =
   | 'tree:delete'
   | 'tree:move'
   | 'qr:manage'
-  | 'farm:settings';
+  | 'farm:settings'
+  | 'report:view';
 
 const MANAGER: Permission[] = [
   'tree:read',
@@ -17,6 +18,7 @@ const MANAGER: Permission[] = [
   'tree:move',
   'qr:manage',
   'farm:settings',
+  'report:view',
 ];
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {

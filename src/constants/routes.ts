@@ -8,6 +8,7 @@ export const ROUTES = {
   qr: '/qr',
   activity: '/activity',
   materials: '/materials',
+  reports: '/reports',
   settings: '/settings',
   forbidden: '/403',
 } as const;
