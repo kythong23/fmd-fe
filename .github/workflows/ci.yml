@@ -1,5 +1,8 @@
-# CI cho FE. Deploy do Cloudflare Pages tự làm qua Git integration (D13):
-# push main → production, mở PR → preview URL. Workflow này chỉ chặn code hỏng trước khi merge.
+# CI cho FE: chặn code hỏng trước khi merge.
+# CD: push main → build production rồi `wrangler deploy` lên Cloudflare Workers (worker `fmd`).
+# Cần cấu hình trong repo (Settings → Secrets and variables → Actions):
+#   secrets: CLOUDFLARE_API_TOKEN (quyền Edit Cloudflare Workers), CLOUDFLARE_ACCOUNT_ID
+#   variables: VITE_API_URL, VITE_PUBLIC_URL (giá trị production, Vite nhúng vào bundle lúc build)
 name: CI
 
 on:
@@ -22,3 +25,27 @@ jobs:
         env:
           VITE_API_URL: https://api.example.invalid/api/v1
           VITE_PUBLIC_URL: https://app.example.invalid
+
+  deploy:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Không chạy 2 lần deploy chồng nhau; bản merge mới hơn sẽ đợi bản trước xong
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
+      - run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
