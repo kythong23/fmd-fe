@@ -1,17 +1,18 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { AlertOctagon, AlertTriangle, CheckCircle2, Map, QrCode, Trees } from 'lucide-react';
 import { PageContainer, PageHeader } from '@/components/layout/PageContainer';
-import { Button, Card, Skeleton } from '@/components/ui';
+import { Button, Card, Pagination, Skeleton } from '@/components/ui';
 import { StateBoundary } from '@/components/shared/StateBoundary';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { TreeCard } from '@/features/trees/components/TreeCard';
 import { useFarm, useTrees } from '@/hooks/tree-queries';
 import { useIsDesktop } from '@/hooks/use-media-query';
 import { useUi } from '@/stores/ui-context';
-import { ROUTES, STALE_UPDATE_DAYS } from '@/constants/routes';
-import { daysSince } from '@/utils/date';
+import { ROUTES } from '@/constants/routes';
 import { StatCard } from '../components/StatCard';
+
+const TREES_PER_PAGE = 16;
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -32,18 +33,16 @@ export default function DashboardPage() {
     [trees],
   );
 
-  // Thông tin quan trọng nhất của page: cây có vấn đề hoặc lâu chưa cập nhật (05_FRONTEND §6.2)
-  const attention = useMemo(
-    () =>
-      trees
-        .filter((tree) => {
-          const days = daysSince(tree.lastUpdated);
-          return tree.status === 'problem' || days === null || days > STALE_UPDATE_DAYS;
-        })
-        .sort((a, b) => a.healthScore - b.healthScore)
-        .slice(0, 6),
-    [trees],
-  );
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(trees.length / TREES_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedTrees = trees.slice((currentPage - 1) * TREES_PER_PAGE, currentPage * TREES_PER_PAGE);
+  const treeListRef = useRef<HTMLDivElement>(null);
+
+  function handlePageChange(nextPage: number) {
+    setPage(nextPage);
+    treeListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   return (
     <PageContainer>
@@ -142,28 +141,36 @@ export default function DashboardPage() {
           </Button>
         </Card>
 
-        <Card className="mt-6">
-          <Card.Header>
-            <Card.Title>Cây cần chú ý</Card.Title>
-            <span className="text-caption text-text-muted">
-              Có vấn đề hoặc quá {STALE_UPDATE_DAYS} ngày chưa cập nhật
-            </span>
-          </Card.Header>
+        <div ref={treeListRef} className="mt-6 scroll-mt-4">
+          <Card>
+            <Card.Header>
+              <Card.Title>Danh sách cây</Card.Title>
+              <span className="text-caption text-text-muted">{trees.length} cây trong vườn</span>
+            </Card.Header>
 
-          {attention.length === 0 ? (
-            <EmptyState
-              icon={CheckCircle2}
-              title="Không có cây nào cần chú ý"
-              description="Toàn bộ cây đều khỏe và được cập nhật gần đây. Tiếp tục duy trì lịch kiểm tra."
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {attention.map((tree) => (
-                <TreeCard key={tree.code} tree={tree} />
-              ))}
-            </div>
-          )}
-        </Card>
+            {trees.length === 0 ? (
+              <EmptyState
+                icon={Trees}
+                title="Chưa có cây nào"
+                description="Vườn chưa có dữ liệu cây. Thêm cây để bắt đầu theo dõi."
+              />
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                  {pagedTrees.map((tree) => (
+                    <TreeCard key={tree.code} tree={tree} />
+                  ))}
+                </div>
+                <Pagination
+                  page={currentPage}
+                  totalPages={totalPages}
+                  totalItems={trees.length}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )}
+          </Card>
+        </div>
       </StateBoundary>
     </PageContainer>
   );

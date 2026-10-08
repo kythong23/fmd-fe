@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ImageOff } from 'lucide-react';
+import { TreeDeciduous } from 'lucide-react';
 
 export interface TreeAvatarProps {
   code: string;
@@ -13,7 +13,7 @@ export function TreeAvatar({ code, image }: TreeAvatarProps) {
   if (!image || broken) {
     return (
       <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong bg-surface-sunken text-text-muted">
-        <ImageOff aria-hidden className="size-6" />
+        <TreeDeciduous aria-hidden className="size-8" />
         <p className="text-caption">Chưa có ảnh đại diện cho cây {code}</p>
       </div>
     );

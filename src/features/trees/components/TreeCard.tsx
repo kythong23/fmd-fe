@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
-import { ChevronRight, ImageOff, CalendarDays, MapPin } from 'lucide-react';
+import { ChevronRight, CalendarDays, MapPin, TreeDeciduous } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { HealthScore } from '@/components/shared/HealthScore';
 import { ROUTES } from '@/constants/routes';
@@ -9,20 +10,23 @@ import type { Tree } from '@/types';
 /** Card cây dùng chung cho mọi grid danh sách cây (05_FRONTEND §18) */
 export function TreeCard({ tree }: { tree: Tree }) {
   const age = yearsSince(tree.plantedDate);
+  const [broken, setBroken] = useState(false);
 
   return (
     <article className="flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition-colors hover:border-border-strong">
       <div className="relative aspect-[16/10] w-full bg-surface-sunken">
-        {tree.image ? (
+        {/* Chưa có ảnh (hoặc ảnh lỗi) -> icon mẫu giống popup thông tin cây */}
+        {tree.image && !broken ? (
           <img
             src={tree.image}
             alt={'Ảnh cây ' + tree.code}
             loading="lazy"
+            onError={() => setBroken(true)}
             className="absolute inset-0 size-full object-cover"
           />
         ) : (
           <div className="flex size-full items-center justify-center text-text-muted">
-            <ImageOff aria-hidden className="size-6" />
+            <TreeDeciduous aria-hidden className="size-10" />
           </div>
         )}
         <div className="absolute left-3 top-3">
