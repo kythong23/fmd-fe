@@ -15,7 +15,12 @@ import {
 import { StateBoundary } from '@/components/shared/StateBoundary';
 import { DateText } from '@/components/shared/DateText';
 import { toAppError } from '@/services/http';
-import { useFarm, useUpdateBenchmark, useUpdateFarmSettings } from '@/hooks/tree-queries';
+import {
+  useFarm,
+  useProvisionTrees,
+  useUpdateBenchmark,
+  useUpdateFarmSettings,
+} from '@/hooks/tree-queries';
 import { parseCoordinate } from '@/utils/coords';
 import { ROUTES } from '@/constants/routes';
 
@@ -31,9 +36,11 @@ export default function SettingsPage() {
   const farmQuery = useFarm();
   const settingsMutation = useUpdateFarmSettings();
   const benchmarkMutation = useUpdateBenchmark();
+  const provisionMutation = useProvisionTrees();
   const [coordinateInput, setCoordinateInput] = useState('');
   const [coordinateError, setCoordinateError] = useState<string | null>(null);
   const [saveResult, setSaveResult] = useState<'success' | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   const farm = farmQuery.data;
 
@@ -51,6 +58,10 @@ export default function SettingsPage() {
   async function onSubmit(values: SettingsForm) {
     try {
       await settingsMutation.mutateAsync(values);
+      // PATCH /farm/settings chỉ lưu con số — phải gọi provision thì mã QR mới thêm/bớt theo.
+      // Gọi mỗi lần lưu (idempotent): vườn đã lệch số (lưu số mà chưa provision) cũng tự khớp lại.
+      const provision = await provisionMutation.mutateAsync(values.estimatedTreeCount);
+      setSaveMessage(provision.message);
       setSaveResult('success');
     } catch (error) {
       toast.error(toAppError(error).message, 'Lưu cài đặt thất bại');
@@ -128,7 +139,11 @@ export default function SettingsPage() {
                 />
                 <Button
                   type="submit"
-                  loading={settingsMutation.isPending || formState.isSubmitting}
+                  loading={
+                    settingsMutation.isPending ||
+                    provisionMutation.isPending ||
+                    formState.isSubmitting
+                  }
                   leftIcon={<Save className="size-5" />}
                 >
                   Lưu cài đặt
@@ -201,7 +216,8 @@ export default function SettingsPage() {
                   Lưu mốc trắc địa
                 </Button>
                 <p className="text-caption text-text-muted">
-                  Điểm neo ảnh nền: {farm.mapLayers.anchors.map((anchor) => anchor.label).join(' • ')}
+                  Điểm neo ảnh nền:{' '}
+                  {farm.mapLayers.anchors.map((anchor) => anchor.label).join(' • ')}
                 </p>
               </div>
             </Card>
@@ -213,7 +229,11 @@ export default function SettingsPage() {
         open={saveResult !== null}
         tone="success"
         title="Đã lưu cài đặt vườn!"
-        description="Thông tin vườn đã cập nhật cho mọi tài khoản đang dùng."
+        description={
+          saveMessage
+            ? `Thông tin vườn đã cập nhật. ${saveMessage}`
+            : 'Thông tin vườn đã cập nhật cho mọi tài khoản đang dùng.'
+        }
         onClose={() => setSaveResult(null)}
       />
     </PageContainer>

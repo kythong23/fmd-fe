@@ -78,6 +78,19 @@ export function useUpdateFarmSettings() {
   });
 }
 
+/** Sinh/xoá mã QR theo số cây khai — đổi cả farm (estimatedTreeCount) lẫn danh sách cây */
+export function useProvisionTrees() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (estimatedTreeCount: number) => farmService.provisionTrees(estimatedTreeCount),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: farmKeys.all }),
+        queryClient.invalidateQueries({ queryKey: treeKeys.all }),
+      ]),
+  });
+}
+
 export function useUpdateBenchmark() {
   const queryClient = useQueryClient();
   return useMutation({
