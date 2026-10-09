@@ -60,15 +60,23 @@ async function fetchTree(path: string, init?: RequestInit): Promise<Tree> {
 
 export const treesService = {
   list: async (filters: TreeFilters = {}): Promise<Tree[]> => {
-    const params = new URLSearchParams();
-    if (filters.q) params.set('q', filters.q);
-    if (filters.status) params.set('status', filters.status);
-    if (filters.block) params.set('block', filters.block);
-    if (filters.activated !== undefined) params.set('activated', String(filters.activated));
-    const query = params.toString();
-    const { items } = await http<{ success: boolean; items: TreeApiItem[] }>(
-      '/trees' + (query ? '?' + query : ''),
-    );
+    // Không truyền limit: BE tự lấy 1 trang = số cây chủ vườn khai (hoặc số thực tế nếu nhiều hơn),
+    // nên thường 1 lần gọi là đủ. Vẫn đi theo nextCursor để không bao giờ mất cây.
+    const items: TreeApiItem[] = [];
+    let cursor: string | null = null;
+    do {
+      const params = new URLSearchParams();
+      if (filters.q) params.set('q', filters.q);
+      if (filters.status) params.set('status', filters.status);
+      if (filters.block) params.set('block', filters.block);
+      if (filters.activated !== undefined) params.set('activated', String(filters.activated));
+      if (cursor) params.set('cursor', cursor);
+      const page: { items: TreeApiItem[]; nextCursor?: string | null } = await http(
+        '/trees?' + params.toString(),
+      );
+      items.push(...page.items);
+      cursor = page.nextCursor ?? null;
+    } while (cursor);
     // Lọc lại phía client: API có thể chưa hỗ trợ đủ tham số lọc
     return items.map(toTree).filter((tree) => matchesFilters(tree, filters));
   },
@@ -104,8 +112,7 @@ export const treesService = {
     fetchTree('/trees/' + code, { method: 'PATCH', body: JSON.stringify(input) }),
 
   /** DELETE /trees/:code — chỉ `manager` (01_REQUIREMENTS §3.3) */
-  remove: (code: string): Promise<void> =>
-    http<void>('/trees/' + code, { method: 'DELETE' }),
+  remove: (code: string): Promise<void> => http<void>('/trees/' + code, { method: 'DELETE' }),
 
   /** PATCH /trees/:code/position — kéo-thả bản đồ, giai đoạn 2, chỉ `manager` (08_AI_RULES §10) */
   updatePosition: (code: string, input: UpdateTreePositionInput): Promise<Tree> =>
